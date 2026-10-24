@@ -616,3 +616,51 @@ pub async fn get_user_by_token(
     ).await?;
     Ok(user)
 }
+
+/// A function to retrieve all the
+/// records from the database for 
+/// posts a user has created. If the
+/// operation is successful, an instance
+/// of the `Vec` structure is returned
+/// containing instances of the `ValkyriePost`
+/// structure. If the operation fails, an error
+/// is returned.
+pub async fn get_user_posts(
+    username: &str,
+    pool: &Pool<Postgres>
+) -> Result<Vec<ValkyriePost>, ValkyrieErr>{
+    let user: ValkyrieUser = get_user_by_name(
+        username,
+        pool
+    ).await?;
+    let posts: Vec<ValkyriePost> = query_as!(
+        ValkyriePost,
+        "SELECT * FROM posts WHERE created_by = $1",
+        &user.username
+    ).fetch_all(pool).await?;
+    Ok(posts)
+}
+
+/// A function to retrieve all the
+/// records from the database for 
+/// API tokens a user has created. If the
+/// operation is successful, an instance
+/// of the `Vec` structure is returned
+/// containing instances of the `APIToken`
+/// structure. If the operation fails, an error
+/// is returned.
+pub async fn get_user_tokens(
+    username: &str,
+    pool: &Pool<Postgres>
+) -> Result<Vec<APIToken>, ValkyrieErr>{
+    let user: ValkyrieUser = get_user_by_name(
+        username,
+        pool
+    ).await?;
+    let tokens: Vec<APIToken> = query_as!(
+        APIToken,
+        "SELECT * FROM api_tokens WHERE owner = $1",
+        &user.username
+    ).fetch_all(pool).await?;
+    Ok(tokens)
+}

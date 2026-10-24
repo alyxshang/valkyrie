@@ -60,6 +60,11 @@ use super::db::get_instance;
 /// being connected to.
 use sqlx::postgres::Postgres;
 
+/// Importing the function to 
+/// retrieve all the posts a
+/// user has created to test it.
+use super::db::get_user_posts;
+
 /// Importing the function to
 /// fetch a post's record from
 /// the database to test it.
@@ -68,6 +73,11 @@ use super::db::get_post_by_id;
 /// Importing the function to create
 /// a new instance to test it.
 use super::db::create_instance;
+
+/// Importing the function to 
+/// retrieve all the API tokens a
+/// user has created to test it.
+use super::db::get_user_tokens;
 
 /// Importing the function to 
 /// fetch the record for a user
@@ -217,6 +227,10 @@ async fn test_db_functions() {
         &fetched_token.token,
         &connection
     ).await.expect("Could not get user by token.");
+    let user_posts = get_user_posts("alyxshang", &connection)
+        .await.expect("Could not fetch user posts.");
+    let user_tokens = get_user_tokens("alyxshang", &connection)
+        .await.expect("Could not fetch user tokens.");
     assert_eq!(fetched.name, "New Example");
     assert_eq!(fetched.description, "A new example instance");
     assert_eq!(fetched.host, instance.host);
@@ -228,6 +242,8 @@ async fn test_db_functions() {
     assert_eq!(post.created_by, "alyxshang");
     assert_eq!(fetched_post.post_content, "HELLO WORLD");
     assert_eq!(fetched_token_user.username, "alyxshang");
+    assert_eq!(user_posts.len(), 1);
+    assert_eq!(user_tokens.len(), 1);
     let del_post_op = delete_post(
         &fetched_post.post_id,
         &connection
