@@ -1,0 +1,19 @@
+[package]
+name = "valkyrie"
+version = "0.1.0"
+edition = "2024"
+author = ["Alyx Shang <alyxshang@alyxshang.boo>"]
+license-file = "LICENSE"
+readme = "README.markdown"
+description= "A lightweight, decentralized, censorship-free social media platform."
+homepage = "https://github.com/alyxshang/valkyrie"
+repository = "https://github.com/alyxshang/valkyrie"
+
+[dependencies]
+sha256 = "1.6.0"
+bcrypt = "0.19.3"
+chrono = "0.4.45"
+actix-web = "4.18.1"
+tokio = { version = "1.54.1", features = ["full"] }
+serde = { version = "1.0.229", features = ["derive"] }
+sqlx = { version = "0.9.0", features = ["postgres", "runtime-tokio", "tls-native-tls"] }
