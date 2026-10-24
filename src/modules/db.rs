@@ -126,7 +126,7 @@ pub async fn get_instance(
         "SELECT * FROM instance"
     ).fetch_all(pool).await?;
     if results.len() == 1{
-        let result: Instance = match results.get(0){
+        let result: Instance = match results.first(){
             Some(result) => result.clone(),
             None => return Err::<Instance, ValkyrieErr>(
                 ValkyrieErr::new("Instance not found.")
@@ -234,7 +234,7 @@ pub async fn get_user_by_name(
         username
     ).fetch_all(pool).await?;
     if results.len() == 1{
-        let result: ValkyrieUser = match results.get(0){
+        let result: ValkyrieUser = match results.first(){
             Some(result) => result.clone(),
             None => return Err::<ValkyrieUser, ValkyrieErr>(
                 ValkyrieErr::new(
@@ -381,8 +381,8 @@ pub async fn create_api_token(
         let token_str_source: String = format!(
             "{}{}{}",
             rfc2822(),
-            &user.username,
-            &user.password
+            user.username,
+            user.password
         );
         let token_str: String = digest(token_str_source);
         let token: APIToken = APIToken {
@@ -427,7 +427,7 @@ pub async fn get_token_by_token(
         token
     ).fetch_all(pool).await?;
     if results.len() == 1{
-        let result: APIToken = match results.get(0){
+        let result: APIToken = match results.first(){
             Some(result) => result.clone(),
             None => return Err::<APIToken, ValkyrieErr>(
                 ValkyrieErr::new(
@@ -483,10 +483,10 @@ pub async fn create_post(
     ).await?;
     let post_id_src: String = format!(
         "{}{}{}{}",
-        &content,
-        &user.username,
+        content,
+        user.username,
         rfc2822(),
-        &user.password
+        user.password
     );
     let post_id: String = digest(post_id_src);
     let post: ValkyriePost = ValkyriePost {
@@ -525,7 +525,7 @@ pub async fn get_post_by_id(
         post_id
     ).fetch_all(pool).await?;
     if results.len() == 1{
-        let result: ValkyriePost = match results.get(0){
+        let result: ValkyriePost = match results.first(){
             Some(result) => result.clone(),
             None => return Err::<ValkyriePost, ValkyrieErr>(
                 ValkyrieErr::new(
