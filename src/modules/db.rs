@@ -664,3 +664,14 @@ pub async fn get_user_tokens(
     ).fetch_all(pool).await?;
     Ok(tokens)
 }
+
+/// A function to check whether
+/// a record for a user exists
+/// in the database. A boolean
+/// is returned to reflect this.
+pub async fn user_exists(
+    username: &str,
+    pool: &Pool<Postgres>
+) -> bool {
+    get_user_by_name(username, pool).await.is_ok()
+}

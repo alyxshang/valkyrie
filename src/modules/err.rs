@@ -10,6 +10,20 @@ Licensed under the FSL v1.
 /// structure.
 use sqlx;
 
+/// Importing the
+/// namespace for
+/// Actix Web to 
+/// implement the
+/// `ResponseError`
+/// trait.
+use actix_web;
+
+/// Importing the macro
+/// for serializing a 
+/// Rust data structure
+/// into a JSON string.
+use serde::Serialize;
+
 /// Importing the "Result"
 /// type because it is needed
 /// by the "Display" trait.
@@ -35,9 +49,15 @@ use std::fmt::Formatter;
 /// `ValkyrieErr` structure.
 use bcrypt::BcryptError;
 
+/// Importing the structure
+/// to return HTTP responses
+/// from a service function
+/// for the REST API.
+use actix_web::HttpResponse;
+
 /// A structure to catch and handle
 /// errors for Valkyrie.
-#[derive(Clone,Eq,PartialEq, Debug)]
+#[derive(Clone,Eq,PartialEq,Debug,Serialize)]
 pub struct ValkyrieErr {
     pub details: String
 }
@@ -112,5 +132,17 @@ impl From<sqlx::Error> for ValkyrieErr{
 impl From<BcryptError> for ValkyrieErr{
     fn from(error: BcryptError) -> Self {
         ValkyrieErr::new(&format!("BCrypt error: {:?}", error.to_string()))
+    }
+}
+
+/// Implementing the `ResponseError`
+/// trait to "convert" the 
+/// `ResponseError` trait
+/// to the `ValkyrieErr`
+/// structure.
+impl actix_web::error::ResponseError for ValkyrieErr{
+    fn error_response(&self) -> HttpResponse {
+        HttpResponse::build(self.status_code())
+            .json(self)
     }
 }

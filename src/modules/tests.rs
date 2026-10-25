@@ -112,6 +112,12 @@ use super::db::get_token_by_token;
 /// test it.
 use super::utils::create_connection;
 
+/// Importing the function to test
+/// whether a supplied username
+/// only contains valid characters
+/// to test it.
+use super::utils::is_valid_username;
+
 /// Importing the function to update
 /// a user's password to test it.
 use super::db::update_user_password;
@@ -141,8 +147,12 @@ async fn test_utils_functions(){
         .expect("Could not get DB url.");
     let connection = create_connection(&url).await;
     let now: String = rfc2822();
+    let invalid_username: bool = is_valid_username("AlYx");
+    let valid_username: bool = is_valid_username("alyxshang");
     assert_eq!(now.is_empty(), false);
     assert_eq!(connection.is_ok(), true);
+    assert_eq!(invalid_username, false);
+    assert_eq!(valid_username, true);
 }
 
 /// A function to test the functions in

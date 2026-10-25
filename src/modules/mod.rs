@@ -29,3 +29,23 @@ pub mod utils;
 /// containing Valkyrie's
 /// database models.
 pub mod models;
+
+/// Exporting the module
+/// containing the service
+/// functions for the REST
+/// API.
+pub mod services;
+
+/// Exporting the module
+/// containing data structures
+/// modelling data for 
+/// accepting JSON payloads
+/// from REST API requests.
+pub mod payloads;
+
+/// Exporting the module
+/// containing data structures
+/// modelling data to be sent
+/// to the client as JSON strings
+/// by serialized into JSON.
+pub mod responses;

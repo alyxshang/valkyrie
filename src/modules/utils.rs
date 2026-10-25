@@ -52,3 +52,27 @@ pub async fn create_connection(
 pub fn rfc2822() -> String{
     Local::now().to_rfc2822()
 }
+
+/// A function to check whether
+/// a supplied username contains
+/// valid characters. A boolean
+/// is returned to reflect this.
+pub fn is_valid_username(
+    username: &str
+) -> bool {
+    let mut result: bool = true;
+    let characters: Vec<char> = username
+        .to_string()
+        .chars()
+        .collect::<Vec<char>>();
+    let alphabet: Vec<char> = "abcdefghijklmnopqrstuvwxyz_"
+        .to_string()
+        .chars()
+        .collect::<Vec<char>>();
+    for character in characters {
+        if !alphabet.contains(&character){
+            result = false;
+        }
+    }
+    result
+}
