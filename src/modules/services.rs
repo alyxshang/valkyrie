@@ -36,10 +36,22 @@ use actix_web::web::Json;
 /// pool.
 use actix_web::web::Data;
 
+/// Importing the function
+/// to create a new record
+/// for a post in the 
+/// database.
 use super::db::create_post;
 
+/// Importing the function
+/// to update an existing
+/// record for a post in the 
+/// database.
 use super::db::update_post;
 
+/// Importing the function
+/// to delete an existing
+/// record for a post in the 
+/// database.
 use super::db::delete_post;
 
 /// Importing the function to
@@ -56,6 +68,9 @@ use super::db::create_user;
 /// to catch and handle errors.
 use super::err::ValkyrieErr;
 
+/// Importing the function to 
+/// retrieve information on 
+/// the current Valkyrie instance.
 use super::db::get_instance;
 
 /// Importing the data structure
@@ -82,8 +97,14 @@ use super::models::APIToken;
 /// being connected to.
 use sqlx::postgres::Postgres;
 
+/// Importing the function to
+/// retrieve the record for a
+/// post, given the post's ID.
 use super::db::get_post_by_id;
 
+/// Importing the function to
+/// get a list of all the tokens
+/// a Valkyrie user has created.
 use super::db::get_user_tokens;
 
 /// Importing the function to
@@ -109,6 +130,10 @@ use super::models::ValkyrieUser;
 /// database.
 use super::models::ValkyriePost;
 
+/// Importing the function to
+/// retrieve the record for a 
+/// Valkyrie user given one of
+/// their tokens.
 use super::db::get_user_by_token;
 
 /// Importing the data structure that
@@ -117,6 +142,9 @@ use super::db::get_user_by_token;
 /// a Valkyrie user.
 use super::payloads::LoginPayload;
 
+/// Importing the function to get
+/// the record for an API token
+/// from the database.
 use super::db::get_token_by_token;
 
 /// Importing the data structure that
@@ -144,8 +172,14 @@ use super::utils::is_valid_username;
 /// string.
 use super::responses::TokenResponse;
 
+/// Importng the function to update
+/// the name of current Valkyrie 
+/// instance's record in the database.
 use super::db::update_instance_name;
 
+/// Importng the function to update
+/// the password of a Valkyrie user's
+/// record in the database.
 use super::db::update_user_password;
 
 /// Importing the data structure to encapsulate
@@ -160,16 +194,39 @@ use super::responses::StatusResponse;
 /// a Valkyrie user.
 use super::payloads::CreateUserPayload;
 
+/// Importng the function to update
+/// the description of a Valkyrie user's
+/// record in the database.
 use super::db::update_user_description;
 
+/// Importing the data structure
+/// that models data to be serialized
+/// from a Rust data structure into 
+/// a JSON payload containing information
+/// on the current Valkyrie instance.
 use super::responses::InstanceResponse;
 
+/// Importing the data structure that
+/// models data to be deserialized from
+/// a JSON string payload for creating
+/// a new post.
 use super::payloads::PostCreatePayload;
 
+/// Importing the data structure that
+/// models data to be deserialized from
+/// a JSON string payload for deleting
+/// an existing post.
 use super::payloads::PostDeletePayload;
 
+/// Importing the data structure that
+/// models data to be deserialized from
+/// a JSON string payload for updating
+/// an existing post.
 use super::payloads::PostUpdatePayload;
 
+/// Importng the function to update
+/// the display name of a Valkyrie user's
+/// record in the database.
 use super::db::update_user_display_name;
 
 /// Importing the data structure that
@@ -185,10 +242,23 @@ use super::payloads::SecureChangePayload;
 /// on a newly-created Valkyrie user.
 use super::responses::CreateUserResponse;
 
+/// Importing the data structure
+/// that models data to be serialized
+/// from a Rust data structure into 
+/// a JSON payload containing information
+/// on all of a Valkyrie user's API tokens.
 use super::responses::UserTokensResponse;
 
+/// Importing the data structure
+/// that models data to be serialized
+/// from a Rust data structure into 
+/// a JSON payload containing information
+/// on a post a Valkyrie user has created.
 use super::responses::PostCreatedResponse;
 
+/// Importng the function to update
+/// the description of current Valkyrie 
+/// instance's record in the database.
 use super::db::update_instance_description;
 
 #[get("/api/instance")]
