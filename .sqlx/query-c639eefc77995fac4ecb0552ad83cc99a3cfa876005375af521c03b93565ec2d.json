@@ -38,6 +38,17 @@
       },
       {
         "ordinal": 3,
+        "name": "use_https",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "instance",
+            "name": "use_https"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
         "name": "description",
         "type_info": "Text",
         "origin": {
@@ -52,6 +63,7 @@
       "Left": []
     },
     "nullable": [
+      false,
       false,
       false,
       false,

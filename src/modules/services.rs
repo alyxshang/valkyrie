@@ -492,7 +492,10 @@ pub async fn post_create_service(
         &data
     ).await?;
     let new_post: ValkyriePost = create_post(
+        &None,
+        &None,
         &user.username,
+        &None,
         &payload.content,
         &data
     ).await?;
@@ -515,13 +518,17 @@ pub async fn post_delete_service(
         &payload.token,
         &data
     ).await?;
+    let instance: Instance = get_instance(&data)
+        .await?;
     let post: ValkyriePost = get_post_by_id(
         &payload.post_id,
+        &instance.host,
         &data
     ).await?;
     if post.created_by == user.username {
         let d_o: bool = match delete_post(
             &post.post_id,
+            &instance.host,
             &data
         ).await {
             Ok(_f) => true,
@@ -548,13 +555,17 @@ pub async fn post_update_service(
         &payload.token,
         &data
     ).await?;
+    let instance: Instance = get_instance(&data)
+        .await?;
     let post: ValkyriePost = get_post_by_id(
         &payload.post_id,
+        &instance.host,
         &data
     ).await?;
     if post.created_by == user.username {
         let uo: bool = match update_post(
             &post.post_id,
+            &instance.host,
             &payload.content,
             &data
         ).await {

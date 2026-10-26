@@ -17,10 +17,11 @@ use sqlx::FromRow;
 /// Valkyrie instance
 /// in the database.
 #[derive(FromRow, Clone)]
-pub struct Instance{
+pub struct Instance{ 
     pub host: String,
     pub name: String,
     pub admin: String,
+    pub use_https: bool,
     pub description: String
 }
 
@@ -44,7 +45,8 @@ pub struct ValkyrieUser{
 pub struct ValkyriePost {
     pub post_id: String,
     pub created_at: String, 
-    pub created_by: String, 
+    pub created_by: String,
+    pub created_by_host: String,
     pub post_content: String
 }
 
@@ -56,4 +58,18 @@ pub struct ValkyriePost {
 pub struct APIToken {
     pub owner: String,
     pub token: String,
+}
+
+/// A table to model
+/// information about
+/// a followiner-followee
+/// relationship in the
+/// database.
+#[derive(FromRow, Clone)]
+pub struct Follow {
+  pub id: String,
+  pub sender_host: String,
+  pub sender_handle: String,
+  pub receiver_host: String,
+  pub receiver_handle: String
 }

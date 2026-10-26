@@ -44,6 +44,11 @@ use sha256::digest;
 /// for hashing a string.
 use bcrypt::DEFAULT_COST;
 
+/// Importing the structure
+/// that models a following-followee
+/// relationship in the database.
+use super::models::Follow;
+
 /// Importing the function
 /// to get the current time
 /// in the RFC 2822 format.
@@ -92,6 +97,7 @@ pub async fn create_instance(
     host: &str,
     name: &str,
     admin: &str,
+    use_https: &bool,
     description: &str,
     pool: &Pool<Postgres>
 ) -> Result<Instance, ValkyrieErr>{
@@ -99,13 +105,15 @@ pub async fn create_instance(
         host: host.to_string(),
         name: name.to_string(),
         admin: admin.to_string(),
+        use_https: *use_https,
         description: description.to_string(),
     };
     let _q = query!(
-        "INSERT INTO instance (host, name, admin, description) VALUES ($1, $2, $3, $4)",
+        "INSERT INTO instance (host, name, admin, use_https, description) VALUES ($1, $2, $3, $4, $5)",
         instance.host,
         instance.name,
         instance.admin,
+        instance.use_https,
         instance.description
     ).execute(pool).await?;
     let fetched: Instance = get_instance(pool).await?;
@@ -473,37 +481,56 @@ pub async fn delete_api_token(
 /// If the operation fails, an error is 
 /// returned.
 pub async fn create_post(
+    post_id: &Option<&str>,
+    created_at: &Option<&str>,
     username: &str,
+    host: &Option<&str>,
     content: &str,
     pool: &Pool<Postgres>
 ) -> Result<ValkyriePost, ValkyrieErr>{
     let user: ValkyrieUser = get_user_by_name(
         username,
         pool
-    ).await?;
-    let post_id_src: String = format!(
-        "{}{}{}{}",
-        content,
-        user.username,
-        rfc2822(),
-        user.password
-    );
-    let post_id: String = digest(post_id_src);
+    ).await?; 
+    let id: String = match post_id {
+        Some(f) => f.to_string(),
+        None => {
+            let post_id_src: String = format!(
+                "{}{}{}{}",
+                content,
+                user.username,
+                rfc2822(),
+                user.password
+            );
+            digest(post_id_src)
+        }
+    };
+    let date: String = match created_at {
+        Some(ca) => ca.to_string(),
+        None => rfc2822()
+    };
+    let created_by_host: String = match host{
+        Some(f) => f.to_string(),
+        None => get_instance(pool).await?.host
+    };
     let post: ValkyriePost = ValkyriePost {
-        post_id: post_id.clone(),
-        created_at: rfc2822(),
+        post_id: id.clone(),
+        created_at: date,
         created_by: user.username.clone(),
+        created_by_host: created_by_host.clone(),
         post_content: content.to_string()
     };
     let _q = query!(
-        "INSERT INTO posts (post_id, created_at, created_by, post_content) VALUES ($1, $2, $3, $4)",
+        "INSERT INTO posts (post_id, created_at, created_by, created_by_host, post_content) VALUES ($1, $2, $3, $4, $5)",
         post.post_id,
         post.created_at,
         post.created_by,
+        post.created_by_host,
         post.post_content
     ).execute(pool).await?;
     let fetched: ValkyriePost = get_post_by_id(
-        &post_id,
+        &id,
+        &created_by_host,
         pool
     ).await?;
     Ok(fetched)
@@ -517,12 +544,14 @@ pub async fn create_post(
 /// returned.
 pub async fn get_post_by_id(
     post_id: &str,
+    host: &str,
     pool: &Pool<Postgres>
 ) -> Result<ValkyriePost, ValkyrieErr>{
     let results: Vec<ValkyriePost> = query_as!(
         ValkyriePost,
-        "SELECT * FROM posts WHERE post_id = $1",
-        post_id
+        "SELECT * FROM posts WHERE post_id = $1 AND created_by_host = $2",
+        post_id,
+        host
     ).fetch_all(pool).await?;
     if results.len() == 1{
         let result: ValkyriePost = match results.first(){
@@ -557,15 +586,18 @@ pub async fn get_post_by_id(
 /// an error is returned.
 pub async fn delete_post(
     post_id: &str,
+    host: &str,
     pool: &Pool<Postgres>
 ) -> Result<(), ValkyrieErr>{
     let object: ValkyriePost = get_post_by_id(
         post_id,
+        host,
         pool
     ).await?;
     let _q = query!(
-        "DELETE FROM posts WHERE post_id = $1",
-        &object.post_id
+        "DELETE FROM posts WHERE post_id = $1 AND created_by_host = $2",
+        &object.post_id,
+        host
     ).execute(pool).await?;
     Ok(())
 }
@@ -579,11 +611,13 @@ pub async fn delete_post(
 /// returned.
 pub async fn update_post(
     post_id: &str,
+    host: &str,
     new_content: &str,
     pool: &Pool<Postgres>
 ) -> Result<(), ValkyrieErr>{
     let post: ValkyriePost = get_post_by_id(
         post_id,
+        host,
         pool
     ).await?;
     let _q = query!(
@@ -627,16 +661,14 @@ pub async fn get_user_by_token(
 /// is returned.
 pub async fn get_user_posts(
     username: &str,
+    host: &str,
     pool: &Pool<Postgres>
 ) -> Result<Vec<ValkyriePost>, ValkyrieErr>{
-    let user: ValkyrieUser = get_user_by_name(
-        username,
-        pool
-    ).await?;
     let posts: Vec<ValkyriePost> = query_as!(
         ValkyriePost,
-        "SELECT * FROM posts WHERE created_by = $1",
-        &user.username
+        "SELECT * FROM posts WHERE created_by = $1 AND created_by_host = $2",
+        username,
+        host
     ).fetch_all(pool).await?;
     Ok(posts)
 }
@@ -674,4 +706,136 @@ pub async fn user_exists(
     pool: &Pool<Postgres>
 ) -> bool {
     get_user_by_name(username, pool).await.is_ok()
+}
+
+/// A function to create a record
+/// in the database for a following-followee
+/// relationship between two users.
+/// If the operation succeeds, an instance 
+/// of the `Follow` model is returned. 
+/// If the operation fails, an error is 
+/// returned.
+pub async fn create_follow(
+    id: Option<&str>,
+    sender_host: &str,
+    sender_handle: &str,
+    receiver_host: &str,
+    receiver_handle: &str,
+    pool: &Pool<Postgres>
+) -> Result<Follow, ValkyrieErr>{
+    let instance_info: Instance = get_instance(pool)
+        .await?;
+    let f_id: String;
+    if receiver_host == instance_info.host{
+        let rel_id: String = match id{
+            Some(rel_id) => rel_id.to_string(),
+            None => return Err::<Follow, ValkyrieErr>(
+                ValkyrieErr::new("No relationship ID specified.")
+            )
+        };
+        f_id = rel_id;
+    }
+    else {
+        let id_source: String = format!(
+            "{}{}{}{}{}", 
+            rfc2822(),
+            sender_host,
+            sender_handle,
+            receiver_host,
+            receiver_handle
+        );
+        f_id = digest(&id_source);
+    }
+    let rel: Follow = Follow{
+        id: f_id,
+        sender_host: sender_host.to_string(),
+        sender_handle: sender_handle.to_string(),
+        receiver_host: receiver_host.to_string(),
+        receiver_handle: receiver_handle.to_string()
+    };
+    let _io = query!(
+        "INSERT INTO follows (id, sender_host, sender_handle, receiver_host, receiver_handle) VALUES ($1, $2, $3, $4, $5)",
+        rel.id,
+        rel.sender_host,
+        rel.sender_handle,
+        rel.receiver_host,
+        rel.receiver_handle
+    ).execute(pool).await?;
+    let fetched: Follow = get_follow_by_participants(
+        &rel.sender_host,
+        &rel.sender_handle,
+        &rel.receiver_host,
+        &rel.receiver_handle,
+        pool
+    ).await?;
+    Ok(fetched)
+}
+
+/// A function to fetch a single record
+/// in the database for a certain 
+/// following-followee relationship.
+/// If the operation succeeds, an instance 
+/// of the `Follow` model is returned. 
+/// If the operation fails, an error is 
+/// returned.
+pub async fn get_follow_by_participants(
+    sender_host: &str,
+    sender_handle: &str,
+    receiver_host: &str,
+    receiver_handle: &str,
+    pool: &Pool<Postgres>
+) -> Result<Follow, ValkyrieErr>{
+    let results: Vec<Follow> = query_as!(
+        Follow,
+        "SELECT * FROM follows WHERE sender_host = $1 AND sender_handle = $2 AND receiver_host = $3 AND receiver_handle = $4",
+        sender_host,
+        sender_handle,
+        receiver_host,
+        receiver_handle,
+    ).fetch_all(pool).await?;
+    if results.len() == 1{
+        let result: Follow = match results.first(){
+            Some(result) => result.clone(),
+            None => return Err::<Follow, ValkyrieErr>(
+                ValkyrieErr::new(
+                    "Could not fetch relationship between users!",
+                )
+            )
+        };
+        Ok(result)
+    }
+    else {
+        Err::<Follow, ValkyrieErr>(
+            ValkyrieErr::new(
+                "Error fetching user relationship: More than one.",
+            )
+        )
+    }
+}
+
+/// A function to delete a single record
+/// in the database for a certain 
+/// following-followee relationship.
+/// If the operation succeeds, nothing 
+/// is returned. If the operation fails, 
+/// an error is returned.
+pub async fn delete_follow_by_participants(
+    sender_host: &str,
+    sender_handle: &str,
+    receiver_host: &str,
+    receiver_handle: &str,
+    pool: &Pool<Postgres>
+) -> Result<(), ValkyrieErr>{
+    let fetched: Follow = get_follow_by_participants(
+        sender_host,
+        sender_handle,
+        receiver_host,
+        receiver_handle,
+        pool
+    ).await?;
+    let _q = query!(
+        "DELETE FROM follows WHERE id = $1",
+        &fetched.id
+    ).execute(pool).await?;
+    Ok(())
 }

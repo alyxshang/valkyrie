@@ -26,6 +26,11 @@ use super::utils::rfc2822;
 /// to test it.
 use super::db::create_user;
 
+/// Importing the function to
+/// check whether a user exists
+/// to test it.
+use super::db::user_exists;
+
 /// Importing the function
 /// to delete a record for
 /// a user to test it.
@@ -167,7 +172,8 @@ async fn test_db_functions() {
     let instance = create_instance(
         "example.com", 
         "Example", 
-        "alyxshang", 
+        "alyxshang",
+        &false,
         "An example instance",
         &connection
     ).await.expect("Could not create instance.");
@@ -220,27 +226,33 @@ async fn test_db_functions() {
         &connection
     ).await.expect("Could not fetch created API token.");
     let post = create_post(
+        &None,
+        &None,
         "alyxshang",
+        &None,
         "Hello World",
         &connection
     ).await.expect("Could not create post.");
     let _upp = update_post(
         &post.post_id,
+        &instance.host,
         "HELLO WORLD",
         &connection
     ).await.expect("Could not update post.");
     let fetched_post = get_post_by_id(
         &post.post_id,
+        &instance.host,
         &connection
     ).await.expect("Could not fetch post.");
     let fetched_token_user = get_user_by_token(
         &fetched_token.token,
         &connection
     ).await.expect("Could not get user by token.");
-    let user_posts = get_user_posts("alyxshang", &connection)
+    let user_posts = get_user_posts("alyxshang", &instance.host, &connection)
         .await.expect("Could not fetch user posts.");
     let user_tokens = get_user_tokens("alyxshang", &connection)
         .await.expect("Could not fetch user tokens.");
+    let user_e: bool = user_exists("alyxshang", &connection).await;
     assert_eq!(fetched.name, "New Example");
     assert_eq!(fetched.description, "A new example instance");
     assert_eq!(fetched.host, instance.host);
@@ -254,8 +266,10 @@ async fn test_db_functions() {
     assert_eq!(fetched_token_user.username, "alyxshang");
     assert_eq!(user_posts.len(), 1);
     assert_eq!(user_tokens.len(), 1);
+    assert_eq!(user_e, true);
     let del_post_op = delete_post(
         &fetched_post.post_id,
+        &instance.host,
         &connection
     ).await;
     let del_token = delete_api_token(

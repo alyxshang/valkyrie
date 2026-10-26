@@ -9,6 +9,11 @@ Licensed under the FSL v1.
 /// into a JSON string.
 use serde::Serialize;
 
+/// Importing the macro
+/// for deserializing JSON
+/// into a Rust data structure.
+use serde::Deserialize;
+
 /// A data structure
 /// to encapsulate data
 /// about a newly created
@@ -37,7 +42,7 @@ pub struct TokenResponse {
 /// of an operation that has been carried
 /// out. This data structure is sent as 
 /// a JSON string.
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct StatusResponse {
     pub is_ok: bool
 }
@@ -56,8 +61,9 @@ pub struct InstanceResponse {
 /// A data structure to encapsulate
 /// data about a created post. This 
 /// data structure is sent as 
-/// a JSON string.
-#[derive(Serialize)]
+/// a JSON string but can also
+/// be received as a JSON string.
+#[derive(Serialize, Deserialize)]
 pub struct PostCreatedResponse {
     pub post_id: String,
     pub created_at: String, 
@@ -66,13 +72,18 @@ pub struct PostCreatedResponse {
 }
 
 /// A data structure to encapsulate
-/// data about a Valkyrie user on
-/// a certain Valkyrie instance. 
+/// data for the Valkyrie protocol
+/// about a user and their posts. 
 /// This data structure is sent as 
-/// a JSON string.
-#[derive(Serialize)]
+/// a JSON string but can also
+/// be received as a JSON string.
+#[derive(Serialize, Deserialize)]
 pub struct UserInfoResponse {
-    pub user: CreateUserResponse,
+    pub username: String,
+    pub display_name: String,
+    pub description: String,
+    pub inbox_url: String,
+    pub post_count: usize,
     pub posts: Vec<PostCreatedResponse>
 }
 

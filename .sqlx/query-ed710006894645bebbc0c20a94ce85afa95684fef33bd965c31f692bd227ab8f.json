@@ -1,0 +1,79 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT * FROM follows WHERE sender_host = $1 AND sender_handle = $2 AND receiver_host = $3 AND receiver_handle = $4",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Varchar",
+        "origin": {
+          "Table": {
+            "table": "follows",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "sender_host",
+        "type_info": "Varchar",
+        "origin": {
+          "Table": {
+            "table": "follows",
+            "name": "sender_host"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "sender_handle",
+        "type_info": "Varchar",
+        "origin": {
+          "Table": {
+            "table": "follows",
+            "name": "sender_handle"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "receiver_host",
+        "type_info": "Varchar",
+        "origin": {
+          "Table": {
+            "table": "follows",
+            "name": "receiver_host"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "receiver_handle",
+        "type_info": "Varchar",
+        "origin": {
+          "Table": {
+            "table": "follows",
+            "name": "receiver_handle"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "ed710006894645bebbc0c20a94ce85afa95684fef33bd965c31f692bd227ab8f"
+}

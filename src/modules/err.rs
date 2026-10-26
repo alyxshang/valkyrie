@@ -12,6 +12,14 @@ use sqlx;
 
 /// Importing the
 /// namespace for
+/// Reqwest to 
+/// implement the
+/// `Error`
+/// trait.
+use reqwest;
+
+/// Importing the
+/// namespace for
 /// Actix Web to 
 /// implement the
 /// `ResponseError`
@@ -144,5 +152,16 @@ impl actix_web::error::ResponseError for ValkyrieErr{
     fn error_response(&self) -> HttpResponse {
         HttpResponse::build(self.status_code())
             .json(self)
+    }
+}
+
+/// Implementing the `reqwest::Error`
+/// trait to "convert" the 
+/// `reqwest::Error` trait
+/// to the `ValkyrieErr`
+/// structure.
+impl From<reqwest::Error> for ValkyrieErr{
+    fn from(error: reqwest::Error) -> Self {
+        ValkyrieErr::new(&format!("Reqwest error: {:?}", error.to_string()))
     }
 }

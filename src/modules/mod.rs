@@ -44,6 +44,13 @@ pub mod services;
 pub mod payloads;
 
 /// Exporting the module
+/// containing the service
+/// functions for the REST
+/// API for the Valkyrie
+/// protocol.
+pub mod protocol;
+
+/// Exporting the module
 /// containing data structures
 /// modelling data to be sent
 /// to the client as JSON strings

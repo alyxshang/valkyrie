@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM posts WHERE post_id = $1 AND created_by_host = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "50425eeaf668508363b25c7bc8ea6c741b0c4558c530323b33e8e2d9a63f74b1"
+}

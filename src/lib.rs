@@ -48,6 +48,13 @@ pub use modules::services::*;
 pub use modules::payloads::*;
 
 /// Re-exporting the module
+/// containing the service
+/// functions for the REST
+/// API for the Valkyrie
+/// protocol.
+pub use modules::protocol::*;
+
+/// Re-exporting the module
 /// containing data structures
 /// modelling data to be sent
 /// to the client as JSON strings
