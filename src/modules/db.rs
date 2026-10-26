@@ -716,59 +716,70 @@ pub async fn user_exists(
 /// If the operation fails, an error is 
 /// returned.
 pub async fn create_follow(
-    id: Option<&str>,
+    id: &Option<&str>,
     sender_host: &str,
     sender_handle: &str,
     receiver_host: &str,
     receiver_handle: &str,
     pool: &Pool<Postgres>
 ) -> Result<Follow, ValkyrieErr>{
-    let instance_info: Instance = get_instance(pool)
-        .await?;
-    let f_id: String;
-    if receiver_host == instance_info.host{
-        let rel_id: String = match id{
-            Some(rel_id) => rel_id.to_string(),
-            None => return Err::<Follow, ValkyrieErr>(
-                ValkyrieErr::new("No relationship ID specified.")
-            )
+    if (receiver_handle == sender_handle &&
+       sender_host != receiver_host) ||
+       (receiver_handle != sender_handle &&
+        sender_host == receiver_host)
+    {
+        let instance_info: Instance = get_instance(pool)
+            .await?;
+        let f_id: String;
+        if receiver_host == instance_info.host && sender_host != instance_info.host{
+            let rel_id: String = match id{
+                Some(rel_id) => rel_id.to_string(),
+                None => return Err::<Follow, ValkyrieErr>(
+                    ValkyrieErr::new("No relationship ID specified.")
+                )
+            };
+            f_id = rel_id;
+        }
+        else {
+            let id_source: String = format!(
+                "{}{}{}{}{}", 
+                rfc2822(),
+                sender_host,
+                sender_handle,
+                receiver_host,
+                receiver_handle
+            );
+            f_id = digest(&id_source);
+        }
+        let rel: Follow = Follow{
+            id: f_id,
+            sender_host: sender_host.to_string(),
+            sender_handle: sender_handle.to_string(),
+            receiver_host: receiver_host.to_string(),
+            receiver_handle: receiver_handle.to_string()
         };
-        f_id = rel_id;
+        let _io = query!(
+            "INSERT INTO follows (id, sender_host, sender_handle, receiver_host, receiver_handle) VALUES ($1, $2, $3, $4, $5)",
+            rel.id,
+            rel.sender_host,
+            rel.sender_handle,
+            rel.receiver_host,
+            rel.receiver_handle
+        ).execute(pool).await?;
+        let fetched: Follow = get_follow_by_participants(
+            &rel.sender_host,
+            &rel.sender_handle,
+            &rel.receiver_host,
+            &rel.receiver_handle,
+            pool
+        ).await?;
+        return Ok(fetched);
     }
     else {
-        let id_source: String = format!(
-            "{}{}{}{}{}", 
-            rfc2822(),
-            sender_host,
-            sender_handle,
-            receiver_host,
-            receiver_handle
-        );
-        f_id = digest(&id_source);
+        Err::<Follow, ValkyrieErr>(
+            ValkyrieErr::new("Sender and receiver cannot be the same user on the same instance.")
+        )
     }
-    let rel: Follow = Follow{
-        id: f_id,
-        sender_host: sender_host.to_string(),
-        sender_handle: sender_handle.to_string(),
-        receiver_host: receiver_host.to_string(),
-        receiver_handle: receiver_handle.to_string()
-    };
-    let _io = query!(
-        "INSERT INTO follows (id, sender_host, sender_handle, receiver_host, receiver_handle) VALUES ($1, $2, $3, $4, $5)",
-        rel.id,
-        rel.sender_host,
-        rel.sender_handle,
-        rel.receiver_host,
-        rel.receiver_handle
-    ).execute(pool).await?;
-    let fetched: Follow = get_follow_by_participants(
-        &rel.sender_host,
-        &rel.sender_handle,
-        &rel.receiver_host,
-        &rel.receiver_handle,
-        pool
-    ).await?;
-    Ok(fetched)
 }
 
 /// A function to fetch a single record
@@ -838,4 +849,54 @@ pub async fn delete_follow_by_participants(
         &fetched.id
     ).execute(pool).await?;
     Ok(())
+}
+
+/// A function to retrieve records for
+/// all the users a user is following. If
+/// the operation is successful, a vector of
+/// instances of the `Follow` structure
+/// is returned. If the operation fails, an 
+/// error is returned.
+pub async fn get_user_following(
+    username: &str,
+    pool: &Pool<Postgres>
+) -> Result<Vec<Follow>, ValkyrieErr>{
+    let user: ValkyrieUser = get_user_by_name(
+        &username,
+        pool
+    ).await?;
+    let instance: Instance = get_instance(pool)
+        .await?;
+    let queried: Vec<Follow> = query_as!(
+        Follow,
+        "SELECT * FROM follows WHERE sender_handle = $1 AND sender_host =$2",
+        &user.username,
+        &instance.host
+    ).fetch_all(pool).await?;
+    Ok(queried)
+}
+
+/// A function to retrieve records for
+/// all the users a user is followed by. If
+/// the operation is successful, a vector of
+/// instances of the `Follow` structure
+/// is returned. If the operation fails, an 
+/// error is returned.
+pub async fn get_user_followers(
+    username: &str,
+    pool: &Pool<Postgres>
+) -> Result<Vec<Follow>, ValkyrieErr>{
+    let user: ValkyrieUser = get_user_by_name(
+        &username,
+        pool
+    ).await?;
+    let instance: Instance = get_instance(pool)
+        .await?;
+    let queried: Vec<Follow> = query_as!(
+        Follow,
+        "SELECT * FROM follows WHERE receiver_handle = $1 AND receiver_host =$2",
+        &user.username,
+        &instance.host
+    ).fetch_all(pool).await?;
+    Ok(queried)
 }

@@ -256,7 +256,7 @@ pub async fn protocol_user_info_service(
             let instance: Instance = get_instance(&data).await?;
             if payload.action == Action::Create {
                 status = match create_follow(
-                    Some(&s.id),
+                    &Some(&s.id),
                     &s.sender_host,
                     &s.sender_handle,
                     &instance.host,
@@ -378,16 +378,11 @@ pub async fn fetch_user_inbox_url(
 }
 
 pub async fn send_message_to_inbox(
-    host: &str,
-    username: &str,
+    url: &str,
     message: &InboxPayload
 ) -> Result<bool, ValkyrieErr>{
     let client: Client = Client::new();
-    let url: String = format!(
-        "{}/protocol/{}",
-        host,
-        username
-    );
+
     let resp: Response = client.post(url)
         .json(&message)
         .send()

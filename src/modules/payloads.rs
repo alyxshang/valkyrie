@@ -180,3 +180,15 @@ pub struct InboxPayload {
     pub entity: Entity,
     pub object: Object
 }
+
+/// A data structure to
+/// encapsulate data for
+/// a JSON payload to 
+/// follow or unfollow 
+/// a user from anywhere.
+#[derive(Deserialize)]
+pub struct FollowActionPayload {
+    pub token: String,
+    pub receiver_handle: String,
+    pub receiver_host: String
+}

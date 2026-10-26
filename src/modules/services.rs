@@ -31,6 +31,11 @@ use actix_web::post;
 use actix_web::web::Json;
 
 /// Importing the structure
+/// that models a following-followee
+/// relationship in the database.
+use super::models::Follow;
+
+/// Importing the structure
 /// to store persistent app
 /// data for the app's database
 /// pool.
@@ -68,6 +73,24 @@ use super::db::create_user;
 /// to catch and handle errors.
 use super::err::ValkyrieErr;
 
+/// Importing the enumeration
+/// describing which type of
+/// entity a federated action
+/// is being carried out.
+use super::payloads::Entity;
+
+/// Importing the structure 
+/// encapsulating data about 
+/// a cross-server 
+/// posting action.
+use super::payloads::Object;
+
+/// Importing the enumeration
+/// describing which type of
+/// federated action is being
+/// carried out.
+use super::payloads::Action;
+
 /// Importing the function to 
 /// retrieve information on 
 /// the current Valkyrie instance.
@@ -90,6 +113,13 @@ use actix_web::HttpResponse;
 /// an API token for a user in the 
 /// database.
 use super::models::APIToken;
+
+/// Importing the function
+/// to create a new record
+/// in the database for a
+/// following-followee
+/// relationship.
+use super::db::create_follow;
 
 /// Importing the structure to
 /// signal to the `Pool` structure
@@ -130,6 +160,12 @@ use super::models::ValkyrieUser;
 /// database.
 use super::models::ValkyriePost;
 
+/// Importing the structure 
+/// encapsulating data about 
+/// a cross-server 
+/// posting action.
+use super::payloads::PostObject;
+
 /// Importing the function to
 /// retrieve the record for a 
 /// Valkyrie user given one of
@@ -141,6 +177,17 @@ use super::db::get_user_by_token;
 /// a JSON string payload for logging in
 /// a Valkyrie user.
 use super::payloads::LoginPayload;
+
+/// Importing the data structure that
+/// models data to be deserialized from
+/// a JSON string payload for carrying
+/// out a federated action.
+use super::payloads::InboxPayload;
+
+/// Importing the function to retrieve 
+/// records for all the users a user 
+/// is followed by.
+use super::db::get_user_followers;
 
 /// Importing the function to get
 /// the record for an API token
@@ -187,6 +234,13 @@ use super::db::update_user_password;
 /// operation. This data structure is sent 
 /// as a JSON string.
 use super::responses::StatusResponse;
+
+/// Importing the structure 
+/// encapsulating data about 
+/// a cross-server 
+/// following-followee
+/// relationship.
+use super::payloads::SubscriberObject;
 
 /// Importing the data structure
 /// that models data to be deserialized
@@ -243,6 +297,12 @@ use super::payloads::SecureChangePayload;
 use super::responses::CreateUserResponse;
 
 /// Importing the data structure
+/// that models data to be deserialized
+/// from a JSON payload for following or
+/// unfollowing a Valkyrie user.
+use super::payloads::FollowActionPayload;
+
+/// Importing the data structure
 /// that models data to be serialized
 /// from a Rust data structure into 
 /// a JSON payload containing information
@@ -256,10 +316,32 @@ use super::responses::UserTokensResponse;
 /// on a post a Valkyrie user has created.
 use super::responses::PostCreatedResponse;
 
+/// Importing the function to fetch the
+/// public inbox url of a user.
+use super::protocol::fetch_user_inbox_url;
+
+/// Importing the function
+/// to retrieve a record
+/// in the database for a
+/// following-followee
+/// relationship.
+use super::db::get_follow_by_participants;
+
+/// Importing the function to send messages
+/// to a user's inbox.
+use super::protocol::send_message_to_inbox;
+
 /// Importng the function to update
 /// the description of current Valkyrie 
 /// instance's record in the database.
 use super::db::update_instance_description;
+
+/// Importing the function
+/// to delete a record
+/// in the database for a
+/// following-followee
+/// relationship.
+use super::db::delete_follow_by_participants;
 
 #[get("/api/instance")]
 pub async fn instance_info_service(
@@ -491,6 +573,12 @@ pub async fn post_create_service(
         &payload.token,
         &data
     ).await?;
+    let user_followers: Vec<Follow> = get_user_followers(
+        &user.username,
+        &data
+    ).await?;
+    let instance: Instance = get_instance(&data)
+        .await?; 
     let new_post: ValkyriePost = create_post(
         &None,
         &None,
@@ -499,6 +587,30 @@ pub async fn post_create_service(
         &payload.content,
         &data
     ).await?;
+    for follower in user_followers {
+        if follower.sender_host != instance.host {
+            let follower_inbox_url: String = fetch_user_inbox_url(
+                &follower.sender_host,
+                &follower.sender_handle
+            ).await?;
+            let _msg = send_message_to_inbox(
+                &follower_inbox_url,
+                &InboxPayload{
+                action: Action::Create,
+                entity: Entity::Post,
+                object: Object::Post(
+                    PostObject {
+                        post_id: new_post.post_id.clone(),
+                        created_at: new_post.created_at.clone(),
+                        created_by: new_post.created_by.clone(),
+                        created_by_host: new_post.created_by_host.clone(),
+                        post_content: new_post.post_content.clone()
+                    }
+                )
+            }
+            ).await?;
+        }
+    }
     let response: PostCreatedResponse = PostCreatedResponse{
         post_id: new_post.post_id,
         created_at: new_post.created_at,
@@ -524,8 +636,36 @@ pub async fn post_delete_service(
         &payload.post_id,
         &instance.host,
         &data
-    ).await?;
+    ).await?; 
     if post.created_by == user.username {
+        let user_followers: Vec<Follow> = get_user_followers(
+            &user.username,
+            &data
+        ).await?;
+        for follower in user_followers {
+            if follower.sender_host != instance.host {
+                let follower_inbox_url: String = fetch_user_inbox_url(
+                    &follower.sender_host,
+                    &follower.sender_handle
+                ).await?;
+                let _msg = send_message_to_inbox(
+                    &follower_inbox_url,
+                    &InboxPayload{
+                        action: Action::Delete,
+                        entity: Entity::Post,
+                        object: Object::Post(
+                            PostObject {
+                                post_id: post.post_id.clone(),
+                                created_at: post.created_at.clone(),
+                                created_by: post.created_by.clone(),
+                                created_by_host: post.created_by_host.clone(),
+                                post_content: post.post_content.clone()
+                            }
+                        )
+                    }
+                ).await?;
+            }
+        }
         let d_o: bool = match delete_post(
             &post.post_id,
             &instance.host,
@@ -572,6 +712,34 @@ pub async fn post_update_service(
             Ok(_f) => true,
             Err(_e) => false
         };
+        let user_followers: Vec<Follow> = get_user_followers(
+            &user.username,
+            &data
+        ).await?;
+        for follower in user_followers {
+            if follower.sender_host != instance.host {
+                let follower_inbox_url: String = fetch_user_inbox_url(
+                    &follower.sender_host,
+                    &follower.sender_handle
+                ).await?;
+                let _msg = send_message_to_inbox(
+                    &follower_inbox_url,
+                    &InboxPayload{
+                        action: Action::Delete,
+                        entity: Entity::Post,
+                        object: Object::Post(
+                            PostObject {
+                                post_id: post.post_id.clone(),
+                                created_at: post.created_at.clone(),
+                                created_by: post.created_by.clone(),
+                                created_by_host: post.created_by_host.clone(),
+                                post_content: post.post_content.clone()
+                            }
+                        )
+                    }
+                ).await?;
+            }
+        }
         let response: StatusResponse = StatusResponse{
             is_ok: uo
         };
@@ -604,3 +772,111 @@ pub async fn list_user_tokens_service(
     };
     Ok(HttpResponse::Ok().json(response))
 }
+
+#[post("/api/user/follow")]
+pub async fn follow_user_service(
+    payload: Json<FollowActionPayload>,
+    data: Data<Pool<Postgres>>
+) -> Result<HttpResponse, ValkyrieErr>{
+    let user: ValkyrieUser = get_user_by_token(
+        &payload.token,
+        &data
+    ).await?;
+    let instance: Instance = get_instance(&data)
+        .await?;
+    let inbox_url: String = fetch_user_inbox_url(
+        &payload.receiver_host,
+        &payload.receiver_handle
+    ).await?;
+    let follow_rel: Follow = create_follow(
+        &None,
+        &instance.host,
+        &user.username,
+        &payload.receiver_host,
+        &payload.receiver_handle,
+        &data
+    ).await?;
+    if payload.receiver_host != instance.host {
+        let _msg: bool = match send_message_to_inbox(
+            &inbox_url,
+            &InboxPayload{
+                action: Action::Create,
+                entity: Entity::Subscription,
+                object: Object::Subscriber(
+                    SubscriberObject {
+                        id: follow_rel.id,
+                        sender_host: follow_rel.sender_host,
+                        sender_handle: follow_rel.sender_handle,
+                        receiver_host: follow_rel.receiver_host,
+                        receiver_handle: follow_rel.receiver_handle
+                    }
+                )
+            }
+        ).await {
+            Ok(_f) => true,
+            Err(_e) => false
+        };
+    } 
+    Ok(HttpResponse::Ok().json(StatusResponse{ is_ok: true}))
+}
+
+#[post("/api/user/unfollow")]
+pub async fn unfollow_user_service(
+    payload: Json<FollowActionPayload>,
+    data: Data<Pool<Postgres>>
+) -> Result<HttpResponse, ValkyrieErr>{
+    let user: ValkyrieUser = get_user_by_token(
+        &payload.token,
+        &data
+    ).await?;
+    let instance: Instance = get_instance(&data)
+        .await?;
+    let follow_rel: Follow = get_follow_by_participants(
+        &instance.host,
+        &user.username,
+        &payload.receiver_host,
+        &payload.receiver_handle,
+        &data
+    ).await?;
+    let del_op: bool = match delete_follow_by_participants(
+        &instance.host,
+        &user.username,
+        &payload.receiver_host,
+        &payload.receiver_handle,
+        &data
+    ).await {
+        Ok(_f) => true,
+        Err(_e) => false
+    };
+    if payload.receiver_host != instance.host {
+        let inbox_url: String = fetch_user_inbox_url(
+            &payload.receiver_host,
+            &payload.receiver_handle
+        ).await?;
+        let _msg: bool = match send_message_to_inbox(
+            &inbox_url,
+            &InboxPayload{
+                action: Action::Delete,
+                entity: Entity::Subscription,
+                object: Object::Subscriber(
+                    SubscriberObject {
+                        id: follow_rel.id,
+                        sender_host: follow_rel.sender_host,
+                        sender_handle: follow_rel.sender_handle,
+                        receiver_host: follow_rel.receiver_host,
+                        receiver_handle: follow_rel.receiver_handle
+                    }
+                )
+            }
+        ).await {
+            Ok(_f) => true,
+            Err(_e) => false
+        };
+    }
+    let del_response: StatusResponse = StatusResponse{
+        is_ok: del_op
+    };
+    Ok(HttpResponse::Ok().json(del_response))
+}
+
+

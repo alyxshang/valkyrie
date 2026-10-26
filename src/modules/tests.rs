@@ -59,6 +59,13 @@ use super::db::update_post;
 /// to test it.
 use super::db::get_instance;
 
+/// Importing the function
+/// to create a new record
+/// in the database for a
+/// following-followee
+/// relationship.
+use super::db::create_follow;
+
 /// Importing the structure to
 /// signal to the `Pool` structure
 /// that PostgreSQL database is
@@ -112,6 +119,16 @@ use super::db::get_user_by_token;
 /// the token's string to test it.
 use super::db::get_token_by_token;
 
+/// Importing the function to retrieve 
+/// records for all the users a user 
+/// is followed by.
+use super::db::get_user_followers;
+
+/// Importing the function to retrieve 
+/// records for all the users a user 
+/// is following.
+use super::db::get_user_following;
+
 /// Importing the function to create
 /// a connection to the database to
 /// test it.
@@ -139,9 +156,21 @@ use super::db::update_user_description;
 /// a user's display name to test it.
 use super::db::update_user_display_name;
 
+/// Importing the function to retrieve the
+/// record for a following-followee relation-
+/// ship from the database given the
+/// participants.
+use super::db::get_follow_by_participants;
+
 /// Importing the function to update the
 /// instance's description to test it.
 use super::db::update_instance_description;
+
+/// Importing the function to delete a
+/// record for a following-followee relation-
+/// ship from the database given the
+/// participants.
+use super::db::delete_follow_by_participants;
 
 /// A function to test the functions
 /// in the module containing utility
@@ -190,6 +219,14 @@ async fn test_db_functions() {
         .expect("Could not fetch instance.");
     let user = create_user(
         "alyxshang",
+        "12345678",
+        "Alyx Shang",
+        "A crabby floofer",
+        false,
+        &connection
+    ).await.expect("User could not be created.");
+    let _test_user = create_user(
+        "alexshang",
         "12345678",
         "Alyx Shang",
         "A crabby floofer",
@@ -253,6 +290,48 @@ async fn test_db_functions() {
     let user_tokens = get_user_tokens("alyxshang", &connection)
         .await.expect("Could not fetch user tokens.");
     let user_e: bool = user_exists("alyxshang", &connection).await;
+    let follow_rel_one = create_follow(
+        &None,
+        &instance.host,
+        "alyxshang",
+        &instance.host,
+        "alexshang",
+        &connection
+    ).await.expect("Alyx could not follow Alex.");
+    let follow_rel_two = create_follow(
+        &None,
+        &instance.host,
+        "alexshang",
+        &instance.host,
+        "alyxshang",
+        &connection
+    ).await.expect("Alyx could not follow Alex.");
+    let fetched_rel_one = get_follow_by_participants(
+        &instance.host,
+        "alyxshang",
+        &instance.host,
+        "alexshang",
+        &connection
+    ).await.expect("Could not fetch first follow rel.");
+    let fetched_rel_two = get_follow_by_participants(
+        &instance.host,
+        "alexshang",
+        &instance.host,
+        "alyxshang",
+        &connection
+    ).await.expect("Could not fetch first follow rel.");
+    let alyx_following_count = get_user_following(
+        "alyxshang",
+        &connection
+    ).await.expect("Could not get Alyx's following count.");
+    let alyx_follower_count = get_user_followers(
+        "alyxshang",
+        &connection
+    ).await.expect("Could not get Alex's following count.");
+    assert_eq!(follow_rel_one.id, fetched_rel_one.id);
+    assert_eq!(follow_rel_two.id, fetched_rel_two.id);
+    assert_eq!(alyx_following_count.len(), 1);
+    assert_eq!(alyx_follower_count.len(), 1);
     assert_eq!(fetched.name, "New Example");
     assert_eq!(fetched.description, "A new example instance");
     assert_eq!(fetched.host, instance.host);
@@ -280,7 +359,22 @@ async fn test_db_functions() {
         "alyxshang",
         &connection
     ).await;
+    let del_f_rel_o = delete_follow_by_participants(
+        &instance.host,
+        "alyxshang",
+        &instance.host,
+        "alexshang",
+        &connection
+    ).await;
+    let del_f_rel_t = delete_follow_by_participants(
+        &instance.host,
+        "alexshang",
+        &instance.host,
+        "alyxshang",
+        &connection
+    ).await;
     assert_eq!(del_post_op.is_ok(), true);
     assert_eq!(del_token.is_ok(), true);
     assert_eq!(del_user.is_ok(), true);
+    assert_eq!(del_f_rel_o.is_ok(), del_f_rel_t.is_ok());
 }
