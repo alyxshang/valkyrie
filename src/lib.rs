@@ -41,6 +41,13 @@ pub use modules::models::*;
 /// for a Valkyrie instance.
 pub use modules::config::*;
 
+/// Re-exporting the
+/// module containing
+/// the function to run
+/// a Valkyrie instance.
+pub use modules::runner::*;
+
+
 /// Re-exporting the module
 /// containing the service
 /// functions for the REST

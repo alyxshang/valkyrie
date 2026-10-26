@@ -205,7 +205,7 @@ use super::db::delete_follow_by_participants;
 /// data structure. If the operation fails, an
 /// error response is returned.
 #[post("/protocol/{user}/inbox")]
-pub async fn protocol_user_info_service(
+pub async fn user_inbox_service(
     payload: Json<InboxPayload>,
     user: Path<String>,
     data: Data<Pool<Postgres>>

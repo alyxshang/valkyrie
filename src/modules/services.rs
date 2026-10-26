@@ -26,7 +26,7 @@ use actix_web::get;
 use actix_web::post;
 
 /// Importing the structure
-/// to sort posts 
+/// to sort itemss 
 /// chronologically.
 use chrono::DateTime;
 
@@ -81,7 +81,7 @@ use super::err::ValkyrieErr;
 /// Importing the enumeration
 /// describing which type of
 /// entity a federated action
-/// is being carried out.
+/// is being carried out on.
 use super::payloads::Entity;
 
 /// Importing the structure 
@@ -114,7 +114,7 @@ use super::models::Instance;
 use actix_web::HttpResponse;
 
 /// Importing the data structure
-/// that models infoormation about
+/// that models information about
 /// an API token for a user in the 
 /// database.
 use super::models::APIToken;
@@ -546,6 +546,13 @@ pub async fn login_user_service(
     Ok(HttpResponse::Ok().json(response))
 }
 
+/// The service function to logout a
+/// Valkyrie user. If the operation succeeds,
+/// an HTTP response containing a success or
+/// failure code in the form of a boolean
+/// is returned. If the operation fails, 
+/// an error is returned.
+/// HTTP VERB: POST
 #[post("/api/user/logout")]
 pub async fn logout_user_service(
     payload: Json<LogoutPayload>,
@@ -568,6 +575,14 @@ pub async fn logout_user_service(
     Ok(HttpResponse::Ok().json(response))
 }
 
+
+/// The service function to edit a user's
+/// display name. If the operation succeeds,
+/// an HTTP response containing a success or
+/// failure code in the form of a boolean
+/// is returned. If the operation fails, 
+/// an error is returned.
+/// HTTP VERB: POST
 #[post("/api/user/edit/name")]
 pub async fn edit_user_display_name_service(
     payload: Json<ChangePayload>,
@@ -591,6 +606,13 @@ pub async fn edit_user_display_name_service(
     Ok(HttpResponse::Ok().json(response))
 }
 
+/// The service function to edit a user's
+/// description. If the operation succeeds,
+/// an HTTP response containing a success or
+/// failure code in the form of a boolean
+/// is returned. If the operation fails, 
+/// an error is returned.
+/// HTTP VERB: POST
 #[post("/api/user/edit/description")]
 pub async fn edit_user_description_service(
     payload: Json<ChangePayload>,
@@ -614,6 +636,13 @@ pub async fn edit_user_description_service(
     Ok(HttpResponse::Ok().json(response))
 }
 
+/// The service function to edit a user's
+/// password. If the operation succeeds,
+/// an HTTP response containing a success or
+/// failure code in the form of a boolean
+/// is returned. If the operation fails, 
+/// an error is returned.
+/// HTTP VERB: POST
 #[post("/api/user/edit/password")]
 pub async fn edit_user_password_service(
     payload: Json<SecureChangePayload>,
@@ -638,6 +667,13 @@ pub async fn edit_user_password_service(
     Ok(HttpResponse::Ok().json(response))
 }
 
+/// The service function to create a new
+/// post for a Valkyrie user. If the operation 
+/// succeeds, an HTTP response containing in the
+/// information on the newly-created post is
+/// returned. If the operation fails, an 
+/// error is returned.
+/// HTTP VERB: POST
 #[post("/api/post/create")]
 pub async fn post_create_service(
     payload: Json<PostCreatePayload>,
@@ -695,6 +731,13 @@ pub async fn post_create_service(
     Ok(HttpResponse::Ok().json(response))
 }
 
+/// The service function to delete a post
+/// a user has made. If the operation succeeds,
+/// an HTTP response containing a success or
+/// failure code in the form of a boolean
+/// is returned. If the operation fails, 
+/// an error is returned.
+/// HTTP VERB: POST
 #[post("/api/post/delete")]
 pub async fn post_delete_service(
     payload: Json<PostDeletePayload>,
@@ -760,6 +803,13 @@ pub async fn post_delete_service(
     }
 }
 
+/// The service function to update a post
+/// a user has made. If the operation succeeds,
+/// an HTTP response containing a success or
+/// failure code in the form of a boolean
+/// is returned. If the operation fails, 
+/// an error is returned.
+/// HTTP VERB: POST
 #[post("/api/post/update")]
 pub async fn post_update_service(
     payload: Json<PostUpdatePayload>,
@@ -826,6 +876,14 @@ pub async fn post_update_service(
     }
 }
 
+/// The service function to query all API
+/// tokens created and active by and for a
+/// Valkyrie user. If the operation succeeds,
+/// an HTTP response containing a dictionary
+/// containing a list of these tokens is
+/// returned. If the operation fails, 
+/// an error is returned.
+/// HTTP VERB: POST
 #[post("/api/user/tokens/list")]
 pub async fn list_user_tokens_service(
     payload: Json<LogoutPayload>,
@@ -847,6 +905,13 @@ pub async fn list_user_tokens_service(
     Ok(HttpResponse::Ok().json(response))
 }
 
+/// The service function to follow another
+/// Valkyrie user. If the operation succeeds,
+/// an HTTP response containing a success or
+/// failure code in the form of a boolean
+/// is returned. If the operation fails, 
+/// an error is returned.
+/// HTTP VERB: POST
 #[post("/api/user/follow")]
 pub async fn follow_user_service(
     payload: Json<FollowActionPayload>,
@@ -894,6 +959,13 @@ pub async fn follow_user_service(
     Ok(HttpResponse::Ok().json(StatusResponse{ is_ok: true}))
 }
 
+/// The service function to unfollow another
+/// Valkyrie user. If the operation succeeds,
+/// an HTTP response containing a success or
+/// failure code in the form of a boolean
+/// is returned. If the operation fails, 
+/// an error is returned.
+/// HTTP VERB: POST
 #[post("/api/user/unfollow")]
 pub async fn unfollow_user_service(
     payload: Json<FollowActionPayload>,
@@ -953,6 +1025,14 @@ pub async fn unfollow_user_service(
     Ok(HttpResponse::Ok().json(del_response))
 }
 
+/// The service function to query all posts
+/// of all users a Valkyrie user is following.
+/// If the operation succeeds, an HTTP response 
+/// containing a dictionary containing a list
+/// containing each post with salient details
+/// about the user who posted them. If the 
+/// operation fails, an error is returned.
+/// HTTP VERB: POST
 #[post("/api/user/timeline")]
 pub async fn timeline_service(
     payload: Json<LogoutPayload>,

@@ -19,7 +19,7 @@ use super::err::ValkyrieErr;
 pub struct Config {
     pub use_ssl: bool,
     pub instance_ip: String,
-    pub instance_port: i64,
+    pub instance_port: u16,
     pub instance_host: String,
     pub instance_name: String,
     pub instance_admin: String,
@@ -54,7 +54,7 @@ pub fn read_config(
     if use_ssl == "YES" {
         use_https = true;
     }
-    let parsed: i64 = instance_port.parse::<i64>()?;
+    let parsed: u16 = instance_port.parse::<u16>()?;
     let config: Config = Config {
         use_ssl: use_https,
         instance_ip: instance_ip,

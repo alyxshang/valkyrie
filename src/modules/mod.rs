@@ -37,6 +37,12 @@ pub mod models;
 /// for a Valkyrie instance.
 pub mod config;
 
+/// Exporting the
+/// module containing
+/// the function to run
+/// a Valkyrie instance.
+pub mod runner;
+
 /// Exporting the module
 /// containing the service
 /// functions for the REST

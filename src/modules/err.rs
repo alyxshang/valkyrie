@@ -3,6 +3,11 @@ VALKYRIE by Alyx Shang.
 Licensed under the FSL v1.
 */
 
+/// Importing the standard
+/// namespace for the I/O
+/// error.
+use std;
+
 /// Importing the "sqlx"
 /// namespace to implement
 /// the `Error` trait from it
@@ -187,5 +192,17 @@ impl From<std::num::ParseIntError> for ValkyrieErr{
 impl From<std::env::VarError> for ValkyrieErr{
     fn from(error: std::env::VarError) -> Self {
         ValkyrieErr::new(&format!("Environment error: {:?}", error.to_string()))
+    }
+}
+
+/// Implementing the 
+/// `std::io::VarError`
+/// trait to "convert" the 
+/// `Error` structure
+/// to the `ValkyrieErr`
+/// structure.
+impl From<std::io::Error> for ValkyrieErr{
+    fn from(error: std::io::Error) -> Self {
+        ValkyrieErr::new(&format!("I/O error: {:?}", error.to_string()))
     }
 }

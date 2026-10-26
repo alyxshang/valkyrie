@@ -89,7 +89,6 @@ use super::db::get_user_posts;
 /// the database to test it.
 use super::db::get_post_by_id;
 
-
 /// Importing the function to create
 /// a new instance to test it.
 use super::db::create_instance;
