@@ -10,6 +10,7 @@ homepage = "https://github.com/alyxshang/valkyrie"
 repository = "https://github.com/alyxshang/valkyrie"
 
 [dependencies]
+rand = "0.10.3"
 sha256 = "1.6.0"
 bcrypt = "0.19.3"
 chrono = "0.4.45"

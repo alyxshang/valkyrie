@@ -165,3 +165,27 @@ impl From<reqwest::Error> for ValkyrieErr{
         ValkyrieErr::new(&format!("Reqwest error: {:?}", error.to_string()))
     }
 }
+
+/// Implementing the 
+/// `std::num::ParseIntError`
+/// trait to "convert" the 
+/// `ParseIntError` structure
+/// to the `ValkyrieErr`
+/// structure.
+impl From<std::num::ParseIntError> for ValkyrieErr{
+    fn from(error: std::num::ParseIntError) -> Self {
+        ValkyrieErr::new(&format!("Integer-parsing error: {:?}", error.to_string()))
+    }
+}
+
+/// Implementing the 
+/// `std::env::VarError`
+/// trait to "convert" the 
+/// `VarError` structure
+/// to the `ValkyrieErr`
+/// structure.
+impl From<std::env::VarError> for ValkyrieErr{
+    fn from(error: std::env::VarError) -> Self {
+        ValkyrieErr::new(&format!("Environment error: {:?}", error.to_string()))
+    }
+}

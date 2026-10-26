@@ -76,6 +76,17 @@ use super::models::APIToken;
 /// being connected to.
 use sqlx::postgres::Postgres;
 
+/// Importing the entity from
+/// the "rand" crate to generate
+/// random alphanumeric strings.
+use rand::distr::Alphanumeric;
+
+/// Importing the entity from
+/// the "rand" crate to generate
+/// random alphanumeric sample 
+/// strings.
+use rand::distr::SampleString;
+
 /// Importing the data structure
 /// that models information about
 /// a user in the database.
@@ -387,10 +398,11 @@ pub async fn create_api_token(
     let verified: bool = verify(password, &user.password)?;
     if verified {
         let token_str_source: String = format!(
-            "{}{}{}",
+            "{}{}{}{}",
             rfc2822(),
             user.username,
-            user.password
+            user.password,
+            Alphanumeric.sample_string(&mut rand::rng(), 32)
         );
         let token_str: String = digest(token_str_source);
         let token: APIToken = APIToken {
@@ -730,15 +742,15 @@ pub async fn create_follow(
     {
         let instance_info: Instance = get_instance(pool)
             .await?;
-        let f_id: String;
-        if receiver_host == instance_info.host && sender_host != instance_info.host{
+        let f_id: String = if receiver_host == instance_info.host && 
+            sender_host != instance_info.host{
             let rel_id: String = match id{
                 Some(rel_id) => rel_id.to_string(),
                 None => return Err::<Follow, ValkyrieErr>(
                     ValkyrieErr::new("No relationship ID specified.")
                 )
             };
-            f_id = rel_id;
+            rel_id
         }
         else {
             let id_source: String = format!(
@@ -749,8 +761,8 @@ pub async fn create_follow(
                 receiver_host,
                 receiver_handle
             );
-            f_id = digest(&id_source);
-        }
+            digest(&id_source)
+        };
         let rel: Follow = Follow{
             id: f_id,
             sender_host: sender_host.to_string(),
@@ -773,7 +785,7 @@ pub async fn create_follow(
             &rel.receiver_handle,
             pool
         ).await?;
-        return Ok(fetched);
+        Ok(fetched)
     }
     else {
         Err::<Follow, ValkyrieErr>(
@@ -862,7 +874,7 @@ pub async fn get_user_following(
     pool: &Pool<Postgres>
 ) -> Result<Vec<Follow>, ValkyrieErr>{
     let user: ValkyrieUser = get_user_by_name(
-        &username,
+        username,
         pool
     ).await?;
     let instance: Instance = get_instance(pool)
@@ -887,7 +899,7 @@ pub async fn get_user_followers(
     pool: &Pool<Postgres>
 ) -> Result<Vec<Follow>, ValkyrieErr>{
     let user: ValkyrieUser = get_user_by_name(
-        &username,
+        username,
         pool
     ).await?;
     let instance: Instance = get_instance(pool)

@@ -26,6 +26,11 @@ use actix_web::get;
 use actix_web::post;
 
 /// Importing the structure
+/// to sort posts 
+/// chronologically.
+use chrono::DateTime;
+
+/// Importing the structure
 /// to accept JSON payloads
 /// in POST requests.
 use actix_web::web::Json;
@@ -132,10 +137,19 @@ use sqlx::postgres::Postgres;
 /// post, given the post's ID.
 use super::db::get_post_by_id;
 
+/// Importing the function to 
+/// retrieve all the posts a
+/// user has created to test it.
+use super::db::get_user_posts;
+
 /// Importing the function to
 /// get a list of all the tokens
 /// a Valkyrie user has created.
 use super::db::get_user_tokens;
+
+/// Importing the function to 
+/// fetch the record for a user.
+use super::db::get_user_by_name;
 
 /// Importing the function to
 /// create a new record for an
@@ -189,6 +203,11 @@ use super::payloads::InboxPayload;
 /// is followed by.
 use super::db::get_user_followers;
 
+/// Importing the function to retrieve 
+/// records for all the users a user 
+/// is following.
+use super::db::get_user_following;
+
 /// Importing the function to get
 /// the record for an API token
 /// from the database.
@@ -206,17 +225,24 @@ use super::payloads::ChangePayload;
 /// a Valkyrie user.
 use super::payloads::LogoutPayload;
 
+/// Importing the data structure
+/// that models data to be serialized
+/// from a Rust data structure into 
+/// a JSON payload containing information
+/// on a post contained in a user's timeline.
+use super::responses::TimeLinePost;
+
 /// Importing the function to test
 /// whether a supplied username
 /// only contains valid characters
 /// to test it.
 use super::utils::is_valid_username;
 
-/// Importing the data structure to encapsulate
-/// data about a response containing
-/// a user's API token. This data
-/// structure is sent as a JSON
-/// string.
+/// Importing the data structure to 
+/// encapsulate data about a response 
+/// containing a user's API token. 
+/// This data structure is sent as 
+/// a JSON string.
 use super::responses::TokenResponse;
 
 /// Importng the function to update
@@ -228,6 +254,11 @@ use super::db::update_instance_name;
 /// the password of a Valkyrie user's
 /// record in the database.
 use super::db::update_user_password;
+
+/// Importing the function to fetch
+/// information on a user's federated
+/// profile.
+use super::protocol::fetch_user_info;
 
 /// Importing the data structure to encapsulate
 /// data about the success or failure of an 
@@ -257,6 +288,13 @@ use super::db::update_user_description;
 /// that models data to be serialized
 /// from a Rust data structure into 
 /// a JSON payload containing information
+/// on a user's timeline.
+use super::responses::TimeLineResponse;
+
+/// Importing the data structure
+/// that models data to be serialized
+/// from a Rust data structure into 
+/// a JSON payload containing information
 /// on the current Valkyrie instance.
 use super::responses::InstanceResponse;
 
@@ -265,6 +303,14 @@ use super::responses::InstanceResponse;
 /// a JSON string payload for creating
 /// a new post.
 use super::payloads::PostCreatePayload;
+
+/// Importing the data structure 
+/// to encapsulate data for the 
+/// Valkyrie protocol about a user 
+/// and their posts. This data 
+/// structure is sent as  a JSON 
+/// string.
+use super::responses::UserInfoResponse;
 
 /// Importing the data structure that
 /// models data to be deserialized from
@@ -343,6 +389,13 @@ use super::db::update_instance_description;
 /// relationship.
 use super::db::delete_follow_by_participants;
 
+/// The service function to retrieve information
+/// on the current Valkyrie instance.
+/// If the operation succeeds, an HTTP response 
+/// containing this information is sent back
+/// to the client. If the operation fails, 
+/// an error is returned.
+/// HTTP VERB: GET
 #[get("/api/instance")]
 pub async fn instance_info_service(
     data: Data<Pool<Postgres>>
@@ -356,6 +409,13 @@ pub async fn instance_info_service(
     Ok(HttpResponse::Ok().json(response))
 }
 
+/// The service function to edit the name
+/// of a Valkyrie instance record in the database.
+/// If the operation succeeds, an HTTP response 
+/// containing a status code in the form of a 
+/// boolean is sent back to the client. If the 
+/// operation fails, an error is returned.
+/// HTTP VERB: POST
 #[post("/api/instance/edit/name")]
 pub async fn edit_instance_name_service(
     payload: Json<ChangePayload>,
@@ -385,6 +445,13 @@ pub async fn edit_instance_name_service(
     }
 }
 
+/// The service function to edit the description
+/// of a Valkyrie instance record in the database.
+/// If the operation succeeds, an HTTP response 
+/// containing a status code in the form of a 
+/// boolean is sent back to the client. If the 
+/// operation fails, an error is returned.
+/// HTTP VERB: POST
 #[post("/api/instance/edit/description")]
 pub async fn edit_instance_description_service(
     payload: Json<ChangePayload>,
@@ -415,12 +482,13 @@ pub async fn edit_instance_description_service(
 }
 
 /// The service function to create a new
-/// Valkyrie user. record in the database. 
+/// Valkyrie user record in the database. 
 /// The user is not an administrator by 
 /// default. If the operation succeeds,
 /// an HTTP response containing information
 /// on the created user is returned. If the
 /// operation fails, an error is returned.
+/// HTTP VERB: POST
 #[post("/api/user/create")]
 pub async fn create_user_service(
     payload: Json<CreateUserPayload>,
@@ -456,6 +524,12 @@ pub async fn create_user_service(
     }
 }
 
+/// The service function to login a
+/// Valkyrie user. If the operation succeeds,
+/// an HTTP response containing an API token
+/// is returned. If the operation fails, 
+/// an error is returned.
+/// HTTP VERB: POST
 #[post("/api/user/login")]
 pub async fn login_user_service(
     payload: Json<LoginPayload>,
@@ -879,4 +953,88 @@ pub async fn unfollow_user_service(
     Ok(HttpResponse::Ok().json(del_response))
 }
 
+#[post("/api/user/timeline")]
+pub async fn timeline_service(
+    payload: Json<LogoutPayload>,
+    data: Data<Pool<Postgres>>
+) -> Result<HttpResponse, ValkyrieErr>{
+    let user: ValkyrieUser = get_user_by_token(
+        &payload.token,
+        &data
+    ).await?;
+    let instance: Instance = get_instance(&data)
+        .await?;
+    let user_following: Vec<Follow> = get_user_following(
+        &user.username,
+        &data
+    ).await?;
+    let mut result_posts: Vec<TimeLinePost> = Vec::new();
+    for following in user_following {
+        if following.receiver_host != instance.host {
+            let info: UserInfoResponse = fetch_user_info(
+                &following.receiver_host,
+                &following.receiver_handle
+            ).await?;
+            let posts: Vec<PostCreatedResponse> = info.posts;
+            for post in posts {
+                let item: TimeLinePost = TimeLinePost{
+                    post_id: post.post_id,
+                    created_at: post.created_at,
+                    created_by: post.created_by,
+                    post_content: post.post_content,
+                    author_instance: following.receiver_host.clone(),
+                    author_display_name: info.display_name.clone()
+                };
+                result_posts.push(item);
+            }
+        }
+        else {
+            let posts: Vec<ValkyriePost> = get_user_posts(
+                &following.receiver_handle,
+                &instance.host,
+                &data
+            ).await?;
+            let info: ValkyrieUser = get_user_by_name(
+                &following.receiver_handle,
+                &data
+            ).await?;
+            for post in posts {
+                let item: TimeLinePost = TimeLinePost{
+                    post_id: post.post_id,
+                    created_at: post.created_at,
+                    created_by: post.created_by,
+                    post_content: post.post_content,
+                    author_instance: following.receiver_host.clone(),
+                    author_display_name: info.display_name.clone()
+                };
+                result_posts.push(item);
+            }
+        }
+    }
+    result_posts.sort_by_key(
+        |post| {
+            DateTime::parse_from_rfc2822(&post.created_at)
+                .map(|dt| dt.timestamp())
+                .unwrap_or(0)
+        }
+    );
+    let response: TimeLineResponse = TimeLineResponse {
+        posts: result_posts
+    };
+    Ok(HttpResponse::Ok().json(response))
+}
 
+/*
+#[post("/api/user/delete")]
+pub async fn delete_account_service(
+    payload: Json<LogoutPayload>,
+    data: Data<Pool<Postgres>>
+) -> Result<HttpResponse, ValkyrieErr>{
+    let user: ValkyrieUser = get_user_by_token(
+        &payload.token,
+        &data
+    ).await?;
+    let instance: Instance = get_instance(&data)
+        .await?;
+}
+*/

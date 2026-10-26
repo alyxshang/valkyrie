@@ -31,6 +31,13 @@ pub mod utils;
 pub mod models;
 
 /// Exporting the module
+/// containing the function
+/// and structure to gather
+/// configuration values
+/// for a Valkyrie instance.
+pub mod config;
+
+/// Exporting the module
 /// containing the service
 /// functions for the REST
 /// API.

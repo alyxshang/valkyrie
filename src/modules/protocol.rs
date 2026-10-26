@@ -183,12 +183,27 @@ use super::responses::UserInfoResponse;
 /// is sent as a JSON string.
 use super::responses::PostCreatedResponse;
 
-/// Importing the funciton
+/// Importing the function
 /// to delete an existing record
 /// for a following-followee relationship 
 /// from the database.
 use super::db::delete_follow_by_participants;
 
+/// A service function for a Valkyrie
+/// server that accepts federated actions.
+/// Actions have an `Action` field, and an
+/// `object` field. The former describes actions
+/// like creating, updating, and deleting objects.
+/// The latter carries the object to be deleted
+/// or created. These can be posts or following-
+/// followee relationships. If the action is
+/// successful, a status response is returned
+/// containing a success or failure code in
+/// the form of a boolean. The response is
+/// in JSON format and the string is built
+/// from an instance of the `StatusResponse`
+/// data structure. If the operation fails, an
+/// error response is returned.
 #[post("/protocol/{user}/inbox")]
 pub async fn protocol_user_info_service(
     payload: Json<InboxPayload>,
@@ -290,6 +305,15 @@ pub async fn protocol_user_info_service(
     Ok(HttpResponse::Ok().json(status_response))
 }
 
+/// A service function for a Valkyrie
+/// server that sends back information
+/// about a user and the posts they have
+/// made. Other servers can then fetch and
+/// store this information. The response is
+/// in JSON format and the string is built
+/// from an instance of the `UserInfoResponse`
+/// data structure. If the operation fails, an
+/// error response is returned.
 #[get("/protocol/{user}")]
 pub async fn user_info_service(
     path: Path<String>,
@@ -301,21 +325,18 @@ pub async fn user_info_service(
     ).await?;
     let instance: Instance = get_instance(&data)
         .await?;
-    let inbox_url: String;
-    if instance.use_https{
-        inbox_url = format!(
+    let inbox_url: String = match instance.use_https{
+        true => format!(
             "https://{}/protocol/{}/inbox",
-            &instance.host,
-            &user.username
-        );
-    }
-    else {
-        inbox_url = format!(
+            instance.host,
+            user.username
+        ),
+        false => format!(
             "http://{}/protocol/{}/inbox",
-            &instance.host,
-            &user.username
-        );
-    }
+            instance.host,
+            user.username
+        )
+    };
     let posts: Vec<ValkyriePost> = get_user_posts(
         &user.username,
         &instance.host,
@@ -342,6 +363,12 @@ pub async fn user_info_service(
     Ok(HttpResponse::Ok().json(response))
 }
 
+/// A function to query a user's
+/// public federated information.
+/// If the operation succeeds,
+/// an instance of the `UserInforesponse`
+/// is returned. If the operation fails,
+/// an error is returned.
 pub async fn fetch_user_info(
     host: &str,
     username: &str,
@@ -357,9 +384,15 @@ pub async fn fetch_user_info(
         .await?;
     let result: UserInfoResponse = resp.json().await?;
     Ok(result)
-
 }
 
+/// A function to query a user's
+/// public federated information
+/// and obtain the public inbox
+/// URL. If the operation succeeds,
+/// a string containing the URL is
+/// returned. If the operation fails,
+/// an error is returned.
 pub async fn fetch_user_inbox_url(
     host: &str,
     username: &str,
@@ -377,12 +410,19 @@ pub async fn fetch_user_inbox_url(
     Ok(result.inbox_url)
 }
 
+/// A function to send a message
+/// to a user's inbox. The message
+/// sent is an instance of the 
+/// `InboxPayload` structure. If
+/// the operation succeeds, a boolean
+/// is returned to signal the success
+/// or failure of the sending of the
+/// message.
 pub async fn send_message_to_inbox(
     url: &str,
     message: &InboxPayload
 ) -> Result<bool, ValkyrieErr>{
     let client: Client = Client::new();
-
     let resp: Response = client.post(url)
         .json(&message)
         .send()
@@ -390,5 +430,3 @@ pub async fn send_message_to_inbox(
     let result: StatusResponse = resp.json().await?;
     Ok(result.is_ok)
 }
-
-// Bear sends post -> I am subscribed to bear. (rel saved in db) -> bear queries my inbox url ->-i bear sends to my inbox -> I save post as being from bear.

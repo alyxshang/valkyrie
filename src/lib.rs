@@ -35,6 +35,13 @@ pub use modules::utils::*;
 pub use modules::models::*;
 
 /// Re-exporting the module
+/// containing the function
+/// and structure to gather
+/// configuration values
+/// for a Valkyrie instance.
+pub use modules::config::*;
+
+/// Re-exporting the module
 /// containing the service
 /// functions for the REST
 /// API.

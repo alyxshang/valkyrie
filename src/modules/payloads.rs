@@ -19,7 +19,7 @@ use serde::Deserialize;
 /// a JSON payload to 
 /// create a new Valkyrie
 /// user.
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 pub struct CreateUserPayload {
     pub username: String,
     pub password: String,
@@ -32,7 +32,7 @@ pub struct CreateUserPayload {
 /// a JSON payload to 
 /// login a Valkyrie
 /// user.
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 pub struct LoginPayload {
     pub username: String,
     pub password: String
@@ -43,7 +43,7 @@ pub struct LoginPayload {
 /// a JSON payload to 
 /// logout a Valkyrie
 /// user.
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 pub struct LogoutPayload {
     pub token: String,
 }
@@ -54,7 +54,7 @@ pub struct LogoutPayload {
 /// make a trivial change
 /// to a Valkyrie user's
 /// account.
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 pub struct ChangePayload {
     pub token: String,
     pub new_value: String,
@@ -66,7 +66,7 @@ pub struct ChangePayload {
 /// make a non-trivial change
 /// to a Valkyrie user's
 /// account securely.
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 pub struct SecureChangePayload {
     pub token: String,
     pub password: String,

@@ -20,7 +20,7 @@ use serde::Deserialize;
 /// user to be sent back
 /// to the client as a JSON
 /// string.
-#[derive(Serialize)]
+#[derive(Deserialize, Serialize)]
 pub struct CreateUserResponse {
     pub username: String,
     pub display_name: String,
@@ -32,7 +32,7 @@ pub struct CreateUserResponse {
 /// a user's API token. This data
 /// structure is sent as a JSON
 /// string.
-#[derive(Serialize)]
+#[derive(Deserialize, Serialize)]
 pub struct TokenResponse {
     pub token: String
 }
@@ -51,7 +51,7 @@ pub struct StatusResponse {
 /// data about the current Valkyrie
 /// instance. This data structure 
 /// is sent as a JSON string.
-#[derive(Serialize)]
+#[derive(Deserialize, Serialize)]
 pub struct InstanceResponse {
     pub name: String,
     pub admin: String,
@@ -91,7 +91,30 @@ pub struct UserInfoResponse {
 /// data about a Valkyrie user's
 /// API tokens. This data structure 
 /// is sent as  a JSON string.
-#[derive(Serialize)]
+#[derive(Deserialize, Serialize)]
 pub struct UserTokensResponse {
     pub tokens: Vec<String>
+}
+
+/// A data structure to encapsulate
+/// data about a Valkyrie user's timeline.
+/// This data structure 
+/// is sent as  a JSON string.
+#[derive(Deserialize, Serialize)]
+pub struct TimeLinePost {
+    pub post_id: String,
+    pub created_at: String, 
+    pub created_by: String, 
+    pub post_content: String,
+    pub author_instance: String,
+    pub author_display_name: String
+}
+
+/// A data structure to encapsulate
+/// data about a Valkyrie user's timeline.
+/// This data structure 
+/// is sent as  a JSON string.
+#[derive(Deserialize, Serialize)]
+pub struct TimeLineResponse {
+    pub posts: Vec<TimeLinePost>
 }
