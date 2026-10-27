@@ -1,6 +1,7 @@
 # VALKYRIE
 
 ![Valkyrie CI](https://github.com/alyxshang/valkyrie/actions/workflows/rust.yml/badge.svg)
+![Valkyrie Docker CI](https://github.com/alyxshang/valkyrie/actions/workflows/release.yml/badge.svg)
 
 ***A lightweight, decentralized, censorship-free social media platform.***
 

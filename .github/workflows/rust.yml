@@ -1,3 +1,4 @@
+name: "Run Tests and Lints"
 on: [push]
 jobs:
   test:
