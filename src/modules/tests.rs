@@ -517,7 +517,7 @@ async fn test_db_functions() {
 pub fn test_config(){
     let values = read_config()
         .expect("Could not read configuration values.");
-    assert_eq!(values.instance_admin, "alyxshang");
+    assert_eq!(values.instance_admin, "exampleadmin");
 }
 
 /// A function to test the service function
@@ -536,7 +536,9 @@ pub async fn test_instance_info_service() {
     ).await;
     let req = actix_web::test::TestRequest::get().uri("/api/instance").to_request();
     let resp: InstanceResponse= actix_web::test::call_and_read_body_json(&app, req).await;
-    assert_eq!(resp.name, "Example");
+    let instance_name: String = var("VALKYRIE_INSTANCE_NAME")
+        .expect("Could not fetch instance name.");
+    assert_eq!(resp.name, instance_name);
 }
 
 /// A function to test the service functions
