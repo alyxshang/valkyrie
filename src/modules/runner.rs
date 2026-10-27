@@ -11,6 +11,12 @@ Licensed under the FSL v1.
 /// a database.
 use sqlx::Pool;
 
+/// Importing the
+/// macro to run
+/// migrations on
+/// startup.
+use sqlx::migrate;
+
 /// Importing the structure
 /// to create a new Actix Web
 /// app.
@@ -179,6 +185,12 @@ pub async fn run_app(
     let conn: Pool<Postgres> = create_connection(
         &config.instance_postgres_url
     ).await?;
+    let _migrations = match migrate!().run(&conn).await{
+        Ok(_f) => println!("Migrations successful."),
+        Err(e) => return Err::<(), ValkyrieErr>(
+            ValkyrieErr::new(&e.to_string())
+        )
+    };
     let admin_exists: bool = user_exists(
         &config.instance_admin_username,
         &conn

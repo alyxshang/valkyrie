@@ -18,6 +18,13 @@ actix-cors = "0.7.2"
 actix-web = "4.18.1"
 env_logger = "0.11.11"
 tokio = { version = "1.54.1", features = ["full"] }
-reqwest = { version = "0.13.5", features = ["json"] }
 serde = { version = "1.0.229", features = ["derive"] }
-sqlx = { version = "0.9.0", features = ["postgres", "runtime-tokio", "tls-native-tls"] }
+reqwest = { version = "0.13.5", features = ["json", "rustls"] }
+sqlx = { version = "0.9.0", features = ["postgres", "runtime-tokio", "tls-rustls"] }
+
+[profile.release]
+lto = true
+strip = true
+panic = "abort"
+opt-level = "z"
+codegen-units = 1

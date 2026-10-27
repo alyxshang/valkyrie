@@ -1,0 +1,37 @@
+services:
+  database:
+    image: postgres:18-alpine
+    container_name: database
+    environment:
+      POSTGRES_USER: valkyrie
+      POSTGRES_PASSWORD: PV18123456
+      POSTGRES_DB: valkyrie
+    volumes:
+      - postgres_data:/var/lib/postgresql/
+    ports:
+      - "4000:5432"
+    restart: unless-stopped
+
+  app:
+    build: .
+    container_name: valkyrie
+    environment:
+      - VALKYRIE_USE_SSL=NO
+      - VALKYRIE_INSTANCE_IP=0.0.0.0
+      - VALKYRIE_INSTANCE_PORT=3000
+      - VALYKRIE_INSTANCE_DOMAIN=localhost:3000
+      - VALKYRIE_INSTANCE_NAME=Valkyrie Local
+      - VALKYRIE_INSTANCE_DESCRIPTION=Your instance description
+      - VALKYRIE_INSTANCE_POSTGRES_URL=postgres://valkyrie:PV18123456@database:5432/valkyrie
+      - VALYKRIE_INSTANCE_ADMIN_USERNAME=your_admin_handle
+      - VALKYRIE_INSTANCE_ADMIN_PASSWORD=your_admin_password
+      - VALKYRIE_INSTANCE_ADMIN_DISPLAY_NAME=Administrator
+      - VALKYRIE_INSTANCE_ADMIN_DESCRIPTION=Your Instance Admin description
+    ports:
+      - "3000:3000"
+    depends_on:
+      - database
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
