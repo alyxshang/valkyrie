@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE posts SET post_content = $1 WHERE post_id = $2 AND created_by_host = $3",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "46dd89a277528aad6974856be0407f676a96111105143eb8fdc867887a6af1a2"
+}

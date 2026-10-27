@@ -58,6 +58,11 @@ use super::db::create_post;
 /// database.
 use super::db::update_post;
 
+/// Importing the function from
+/// the database to delete the
+/// account of a Valkyrie user.
+use super::db::delete_user;
+
 /// Importing the function
 /// to delete an existing
 /// record for a post in the 
@@ -141,11 +146,6 @@ use super::db::get_post_by_id;
 /// retrieve all the posts a
 /// user has created to test it.
 use super::db::get_user_posts;
-
-/// Importing the function from
-/// the database to delete the
-/// account of a Valkyrie user.
-use super::db::delete_account;
 
 /// Importing the function to
 /// get a list of all the tokens
@@ -1142,23 +1142,90 @@ pub async fn delete_account_service(
         &data
     ).await?;
     for following in user_following {
-        if following.receiver_handle != instance.host {
+        let follow_rel: Follow = get_follow_by_participants(
+            &instance.host,
+            &user.username,
+            &following.receiver_host,
+            &following.receiver_handle,
+            &data
+        ).await?;
+        if following.receiver_host != instance.host {
+            let inbox_url: String = fetch_user_inbox_url(
+                &following.receiver_host,
+                &following.receiver_handle
+            ).await?;
+            send_message_to_inbox(
+                &inbox_url,
+                &InboxPayload{
+                    action: Action::Delete,
+                    entity: Entity::Subscription,
+                    object: Object::Subscriber(
+                        SubscriberObject {
+                            id: follow_rel.id,
+                            sender_host: follow_rel.sender_host,
+                            sender_handle: follow_rel.sender_handle,
+                            receiver_host: follow_rel.receiver_host,
+                            receiver_handle: follow_rel.receiver_handle
+                        }
+                    )
+                }
+            ).await?;
         }
-    }
-    for follower in user_followers {
-        if follower.receiver_handle != instance.host {
-        }
+        delete_follow_by_participants(
+            &instance.host,
+            &user.username,
+            &following.receiver_host,
+            &following.receiver_handle,
+            &data
+        ).await?;
     }
     let user_posts: Vec<ValkyriePost> = get_user_posts(
         &user.username,
         &instance.host,
         &data
     ).await?;
+    for post in user_posts {
+        delete_post(
+            &post.post_id,
+            &post.created_by_host,
+            &data
+        ).await?;
+        for follower in user_followers.clone() {
+            if follower.sender_host != instance.host {
+                let follower_inbox_url: String = fetch_user_inbox_url(
+                    &follower.sender_host,
+                    &follower.sender_handle
+                ).await?;
+                send_message_to_inbox(
+                    &follower_inbox_url,
+                    &InboxPayload{
+                        action: Action::Delete,
+                        entity: Entity::Post,
+                        object: Object::Post(
+                            PostObject {
+                                post_id: post.post_id.clone(),
+                                created_at: post.created_at.clone(),
+                                created_by: post.created_by.clone(),
+                                created_by_host: post.created_by_host.clone(),
+                                post_content: post.post_content.clone()
+                            }
+                        )
+                    }
+                ).await?;
+            }
+        }
+    }
     let user_tokens: Vec<APIToken> = get_user_tokens(
         &user.username,
         &data
     ).await?;
-    let d_o: bool = match delete_account(
+    for token in user_tokens {
+        delete_api_token(
+            &token.token,
+            &data
+        ).await?;
+    }
+    let d_o: bool = match delete_user(
         &user.username,
         &data
     ).await {
