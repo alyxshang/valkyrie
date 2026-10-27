@@ -48,7 +48,6 @@ pub use modules::config::*;
 /// a Valkyrie instance.
 pub use modules::runner::*;
 
-
 /// Re-exporting the module
 /// containing the service
 /// functions for the REST

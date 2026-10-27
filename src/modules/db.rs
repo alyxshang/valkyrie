@@ -72,7 +72,7 @@ use super::models::APIToken;
 
 /// Importing the structure to
 /// signal to the `Pool` structure
-/// that PostgreSQL database is
+/// that a PostgreSQL database is
 /// being connected to.
 use sqlx::postgres::Postgres;
 
@@ -500,22 +500,24 @@ pub async fn create_post(
     content: &str,
     pool: &Pool<Postgres>
 ) -> Result<ValkyriePost, ValkyrieErr>{
-    let user: ValkyrieUser = get_user_by_name(
-        username,
-        pool
-    ).await?; 
+    let handle: String = match host{
+        Some(_s) => username.to_string(),
+        None => get_user_by_name(
+            username,
+            pool
+        ).await?.username
+    };
     let id: String = match post_id {
         Some(f) => f.to_string(),
-        None => {
-            let post_id_src: String = format!(
+        None => digest(
+            format!(
                 "{}{}{}{}",
                 content,
-                user.username,
+                handle,
                 rfc2822(),
-                user.password
-            );
-            digest(post_id_src)
-        }
+                Alphanumeric.sample_string(&mut rand::rng(), 32)
+            )
+        )
     };
     let date: String = match created_at {
         Some(ca) => ca.to_string(),
@@ -528,7 +530,7 @@ pub async fn create_post(
     let post: ValkyriePost = ValkyriePost {
         post_id: id.clone(),
         created_at: date,
-        created_by: user.username.clone(),
+        created_by: handle.clone(),
         created_by_host: created_by_host.clone(),
         post_content: content.to_string()
     };
@@ -633,9 +635,10 @@ pub async fn update_post(
         pool
     ).await?;
     let _q = query!(
-        "UPDATE posts SET post_content = $1 WHERE post_id = $2",
+        "UPDATE posts SET post_content = $1 WHERE post_id = $2 AND created_by_host = $3",
         new_content,
-        &post.post_id
+        &post.post_id,
+        &post.created_by_host
     ).execute(pool).await?;
     Ok(())
 }

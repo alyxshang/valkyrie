@@ -1,3 +1,6 @@
+# VALKYRIE by Alyx Shang.
+# Licensed under the FSL v1.
+
 FROM messense/rust-musl-cross:x86_64-musl AS builder
 ENV SQLX_OFFLINE=true
 WORKDIR /valkyrie

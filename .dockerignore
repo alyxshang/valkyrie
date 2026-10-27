@@ -5,3 +5,4 @@ LICENSE
 .DS_Store
 .gitignore
 README.markdown
+docker-compose.yml

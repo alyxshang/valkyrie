@@ -72,7 +72,7 @@ use super::db::get_instance;
 
 /// Importing the structure to
 /// signal to the `Pool` structure
-/// that PostgreSQL database is
+/// that a PostgreSQL database is
 /// being connected to.
 use sqlx::postgres::Postgres;
 
@@ -143,7 +143,7 @@ use super::services::post_delete_service;
 use super::services::follow_user_service;
 
 /// Importing the service function to get
-/// infor on the current Valkyrie instance.
+/// info on the current Valkyrie instance.
 use super::services::instance_info_service;
 
 /// Importing the service function to
@@ -238,7 +238,6 @@ pub async fn run_app(
                 .service(post_update_service)
                 .service(post_delete_service)
                 .service(follow_user_service)
-                .service(instance_info_service)
                 .service(instance_info_service)
                 .service(unfollow_user_service)
                 .service(list_user_tokens_service)

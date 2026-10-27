@@ -86,7 +86,7 @@ use super::db::create_follow;
 
 /// Importing the structure to
 /// signal to the `Pool` structure
-/// that PostgreSQL database is
+/// that a PostgreSQL database is
 /// being connected to.
 use sqlx::postgres::Postgres;
 
@@ -280,7 +280,7 @@ use super::db::get_follow_by_participants;
 use super::db::update_instance_description;
 
 /// Importing the service function to get
-/// infor on the current Valkyrie instance.
+/// info on the current Valkyrie instance.
 use super::services::instance_info_service;
 
 /// Importing the function to delete a
@@ -311,7 +311,7 @@ use super::services::edit_user_description_service;
 use super::services::edit_user_display_name_service;
 
 /// Importing the service function to edit
-/// the instance's description.
+/// the instance's description to test it.
 use super::services::edit_instance_description_service;
 
 /// A function to test the functions
@@ -755,7 +755,7 @@ pub async fn test_user_edit_services() {
     
 }
 
-/// A function to test one of the the Valkyrie
+/// A function to test one of the Valkyrie
 /// protocol service functions.
 #[actix_web::test]
 #[serial]

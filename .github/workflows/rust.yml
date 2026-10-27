@@ -29,14 +29,11 @@ jobs:
       VALKYRIE_INSTANCE_ADMIN_DISPLAY_NAME: "Admin"
       VALKYRIE_INSTANCE_ADMIN_DESCRIPTION: "An ancient evil."
     steps:
-    
       - uses: actions/checkout@v6
-
       - name: "Run unit tests."
         uses: actions-rs/cargo@v1
         with:
           command: test
-      
       - name: "Run Clippy."
         uses: actions-rs/cargo@v1
         with:

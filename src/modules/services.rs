@@ -26,7 +26,7 @@ use actix_web::get;
 use actix_web::post;
 
 /// Importing the structure
-/// to sort itemss 
+/// to sort items 
 /// chronologically.
 use chrono::DateTime;
 
@@ -142,6 +142,11 @@ use super::db::get_post_by_id;
 /// user has created to test it.
 use super::db::get_user_posts;
 
+/// Importing the function from
+/// the database to delete the
+/// account of a Valkyrie user.
+use super::db::delete_account;
+
 /// Importing the function to
 /// get a list of all the tokens
 /// a Valkyrie user has created.
@@ -246,7 +251,7 @@ use super::utils::is_valid_username;
 use super::responses::TokenResponse;
 
 /// Importng the function to update
-/// the name of current Valkyrie 
+/// the name of current the Valkyrie 
 /// instance's record in the database.
 use super::db::update_instance_name;
 
@@ -378,7 +383,7 @@ use super::db::get_follow_by_participants;
 use super::protocol::send_message_to_inbox;
 
 /// Importng the function to update
-/// the description of current Valkyrie 
+/// the description of the current Valkyrie 
 /// instance's record in the database.
 use super::db::update_instance_description;
 
@@ -498,7 +503,6 @@ pub async fn create_user_service(
        payload.username.len() <= 16 &&
        payload.password.len() <= 32 &&
        !user_exists(&payload.username, &data).await
-       
     {
         let new_user: ValkyrieUser = create_user(
             &payload.username,
@@ -849,7 +853,7 @@ pub async fn post_update_service(
                 let _msg = send_message_to_inbox(
                     &follower_inbox_url,
                     &InboxPayload{
-                        action: Action::Delete,
+                        action: Action::Update,
                         entity: Entity::Post,
                         object: Object::Post(
                             PostObject {
@@ -898,7 +902,9 @@ pub async fn list_user_tokens_service(
         &data
     ).await?;
     let mut res_strings: Vec<String> = Vec::new();
-    for token in tokens { res_strings.push(token.token.clone()) }
+    for token in tokens { 
+        res_strings.push(token.token.clone());
+    }
     let response: UserTokensResponse = UserTokensResponse{
         tokens: res_strings
     };
@@ -1030,8 +1036,8 @@ pub async fn unfollow_user_service(
 /// If the operation succeeds, an HTTP response 
 /// containing a dictionary containing a list
 /// containing each post with salient details
-/// about the user who posted them. If the 
-/// operation fails, an error is returned.
+/// about the user who posted them is returned. 
+/// If the operation fails, an error is returned.
 /// HTTP VERB: POST
 #[post("/api/user/timeline")]
 pub async fn timeline_service(
@@ -1055,7 +1061,11 @@ pub async fn timeline_service(
                 &following.receiver_host,
                 &following.receiver_handle
             ).await?;
-            let posts: Vec<PostCreatedResponse> = info.posts;
+            let posts: Vec<ValkyriePost> = get_user_posts(
+                &following.receiver_handle,
+                &following.receiver_host,
+                &data
+            ).await?;
             for post in posts {
                 let item: TimeLinePost = TimeLinePost{
                     post_id: post.post_id,
@@ -1104,7 +1114,14 @@ pub async fn timeline_service(
     Ok(HttpResponse::Ok().json(response))
 }
 
-/*
+/// A service function to delete the
+/// account of a Valkyrie user in a federated
+/// manner. If the operation succeeds,
+/// an HTTP response containing a success or
+/// failure code in the form of a boolean
+/// is returned. If the operation fails, 
+/// an error is returned.
+/// HTTP VERB: POST
 #[post("/api/user/delete")]
 pub async fn delete_account_service(
     payload: Json<LogoutPayload>,
@@ -1116,5 +1133,40 @@ pub async fn delete_account_service(
     ).await?;
     let instance: Instance = get_instance(&data)
         .await?;
+    let user_following: Vec<Follow> = get_user_following(
+        &user.username,
+        &data
+    ).await?;
+    let user_followers: Vec<Follow> = get_user_followers(
+        &user.username,
+        &data
+    ).await?;
+    for following in user_following {
+        if following.receiver_handle != instance.host {
+        }
+    }
+    for follower in user_followers {
+        if follower.receiver_handle != instance.host {
+        }
+    }
+    let user_posts: Vec<ValkyriePost> = get_user_posts(
+        &user.username,
+        &instance.host,
+        &data
+    ).await?;
+    let user_tokens: Vec<APIToken> = get_user_tokens(
+        &user.username,
+        &data
+    ).await?;
+    let d_o: bool = match delete_account(
+        &user.username,
+        &data
+    ).await {
+        Ok(_f) => true,
+        Err(_e) => false
+    };
+    let response: StatusResponse = StatusResponse{
+        is_ok: d_o
+    };
+    Ok(HttpResponse::Ok().json(response))
 }
-*/

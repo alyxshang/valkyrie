@@ -173,7 +173,7 @@ use super::payloads::SubscriberObject;
 /// to encapsulate data for the 
 /// Valkyrie protocol about a user 
 /// and their posts. This data 
-/// structure is sent as  a JSON 
+/// structure is sent as a JSON 
 /// string.
 use super::responses::UserInfoResponse;
 
@@ -219,9 +219,7 @@ pub async fn user_inbox_service(
         Entity::Post => {
             let object: PostObject = match payload.object.clone() {
                 Object::Post(p) => p,
-                _ => return Err::<HttpResponse, ValkyrieErr>(
-                    ValkyrieErr::new("Unrecognized object.")
-                )
+                _ => return Ok(HttpResponse::Ok().json(StatusResponse{ is_ok: false }))
             };
             if payload.action == Action::Create {
                 status = match create_post(
@@ -264,9 +262,7 @@ pub async fn user_inbox_service(
         Entity::Subscription => {
             let s: SubscriberObject = match payload.object.clone() {
                 Object::Subscriber(s) => s,
-                _ => return Err::<HttpResponse, ValkyrieErr>(
-                    ValkyrieErr::new("Unrecognized object.")
-                )
+                _ => return Ok(HttpResponse::Ok().json(StatusResponse{ is_ok: false }))
             };
             let instance: Instance = get_instance(&data).await?;
             if payload.action == Action::Create {
@@ -308,8 +304,8 @@ pub async fn user_inbox_service(
 /// A service function for a Valkyrie
 /// server that sends back information
 /// about a user and the posts they have
-/// made. Other servers can then fetch and
-/// store this information. The response is
+/// made. Other servers can then fetch this
+/// information. The response is
 /// in JSON format and the string is built
 /// from an instance of the `UserInfoResponse`
 /// data structure. If the operation fails, an

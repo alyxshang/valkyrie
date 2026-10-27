@@ -74,7 +74,10 @@ illustrated below:
 ## `POST /api/user/create`
 
 This API path allows anyone to create an account on a Valkyrie instance.
-The payload of this API path must have the shape illustrated below:
+The user's username can have a maximum length of 16 characters and can
+only contain lowercase and uppercase letters and an underscore. The user's
+password can have a maximum length of 32 characters. The payload of this 
+API path must have the shape illustrated below:
 
 ```Typescript
 {
@@ -360,6 +363,67 @@ must exist first to unfollow someone.
     token: string,
     receiver_handle: string,
     receiver_host: string
+}
+```
+
+The boolean in the response indicates whether the attempted operation
+was successful or not. The response of this API path has the shape as 
+illustrated below:
+
+```Typescript
+{
+    is_ok: bool
+}
+```
+
+## `POST /api/user/timeline`
+
+This API path allows users to view posts made by users they follow
+from their own instance or other Valkyrie instances. The payload of 
+this API path must have the shape illustrated below. An API token 
+must exist first to view a timeline.
+
+```Typescript
+{
+    token: string,
+}
+```
+
+The response contains a dictionary called `posts` containing post objects of
+users on the requesting user's own instance or users whom they follow.
+Each post object contains salient details about the post, including the
+author's home Valkyrie instance, their handle, and their display name.
+These post objects are called `TimeLinePost` in the code snippet below.
+
+```Typescript
+{
+    posts: List<TimeLinePost>
+}
+```
+
+A `TimeLinePost` object has the following shape:
+
+```Typescript
+{
+    post_id: string,
+    created_at: string, 
+    created_by: string, 
+    post_content: string,
+    author_instance: string,
+    author_display_name: string
+}
+```
+
+## `POST /api/user/delete`
+
+This API path allows users to delete their account. All posts they have
+made are deleted, users are unfollowed and these changes are propagated
+throughout the network. The payload of this API path must have the 
+shape illustrated below. An API token must exist first to delete an account.
+
+```Typescript
+{
+    token: string,
 }
 ```
 

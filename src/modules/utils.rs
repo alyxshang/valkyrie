@@ -22,11 +22,11 @@ use super::err::ValkyrieErr;
 
 /// Importing the structure to
 /// signal to the `Pool` structure
-/// that PostgreSQL database is
+/// that a PostgreSQL database is
 /// being connected to.
 use sqlx::postgres::Postgres;
 
-/// Importing the structure to have
+/// Importing the structure to
 /// create a connection to a PostgreSQL
 /// database.
 use sqlx::postgres::PgPoolOptions;
@@ -48,7 +48,7 @@ pub async fn create_connection(
 }
 
 /// A function to to get the current
-/// time as RFC 2822.
+/// time as a RFC 2822 string.
 pub fn rfc2822() -> String{
     Local::now().to_rfc2822()
 }

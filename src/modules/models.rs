@@ -62,7 +62,7 @@ pub struct APIToken {
 
 /// A table to model
 /// information about
-/// a followiner-followee
+/// a following-followee
 /// relationship in the
 /// database.
 #[derive(FromRow, Clone)]

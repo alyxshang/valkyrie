@@ -1,3 +1,6 @@
+# VALKYRIE by Alyx Shang.
+# Licensed under the FSL v1.
+
 services:
   database:
     image: postgres:18-alpine
@@ -19,11 +22,11 @@ services:
       - VALKYRIE_USE_SSL=NO
       - VALKYRIE_INSTANCE_IP=0.0.0.0
       - VALKYRIE_INSTANCE_PORT=3000
-      - VALYKRIE_INSTANCE_DOMAIN=localhost:3000
+      - VALKYRIE_INSTANCE_DOMAIN=localhost:3000
       - VALKYRIE_INSTANCE_NAME=Valkyrie Local
       - VALKYRIE_INSTANCE_DESCRIPTION=Your instance description
       - VALKYRIE_INSTANCE_POSTGRES_URL=postgres://valkyrie:PV18123456@database:5432/valkyrie
-      - VALYKRIE_INSTANCE_ADMIN_USERNAME=your_admin_handle
+      - VALKYRIE_INSTANCE_ADMIN_USERNAME=your_admin_handle
       - VALKYRIE_INSTANCE_ADMIN_PASSWORD=your_admin_password
       - VALKYRIE_INSTANCE_ADMIN_DISPLAY_NAME=Administrator
       - VALKYRIE_INSTANCE_ADMIN_DESCRIPTION=Your Instance Admin description
