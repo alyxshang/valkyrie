@@ -553,9 +553,7 @@ pub async fn test_instance_info_service() {
     ).await;
     let req = actix_web::test::TestRequest::get().uri("/api/instance").to_request();
     let resp: InstanceResponse= actix_web::test::call_and_read_body_json(&app, req).await;
-    let instance_name: String = var("VALKYRIE_INSTANCE_NAME")
-        .expect("Could not fetch instance name.");
-    assert_eq!(resp.name, instance_name);
+    assert_eq!(resp.name, "My Example");
 }
 
 /// A function to test the service functions
