@@ -7,6 +7,7 @@ Licensed under the FSL v1.
 #![allow(clippy::ptr_arg)]
 #![allow(clippy::box_collection)]
 #![allow(clippy::redundant_field_names)]
+#![allow(clippy::bool_assert_comparison)]
 
 /// Declaring the "modules"
 /// directory as a module.

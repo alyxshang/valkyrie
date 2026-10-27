@@ -42,11 +42,11 @@ pub fn read_config(
     let use_ssl: String = var("VALKYRIE_USE_SSL")?;
     let instance_ip: String = var("VALKYRIE_INSTANCE_IP")?;
     let instance_port: String = var("VALKYRIE_INSTANCE_PORT")?;
-    let instance_host: String = var("VALYKRIE_INSTANCE_DOMAIN")?;
+    let instance_host: String = var("VALKYRIE_INSTANCE_DOMAIN")?;
     let instance_name: String = var("VALKYRIE_INSTANCE_NAME")?;
     let instance_description: String = var("VALKYRIE_INSTANCE_DESCRIPTION")?;
     let instance_postgres_url: String = var("VALKYRIE_INSTANCE_POSTGRES_URL")?;
-    let instance_admin_username: String = var("VALYKRIE_INSTANCE_ADMIN_USERNAME")?;
+    let instance_admin_username: String = var("VALKYRIE_INSTANCE_ADMIN_USERNAME")?;
     let instance_admin_password: String = var("VALKYRIE_INSTANCE_ADMIN_PASSWORD")?;
     let instance_admin_display_name: String = var("VALKYRIE_INSTANCE_ADMIN_DISPLAY_NAME")?;
     let instance_admin_description: String = var("VALKYRIE_INSTANCE_ADMIN_DESCRIPTION")?;

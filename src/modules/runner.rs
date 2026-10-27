@@ -185,7 +185,7 @@ pub async fn run_app(
     let conn: Pool<Postgres> = create_connection(
         &config.instance_postgres_url
     ).await?;
-    let _migrations = match migrate!().run(&conn).await{
+    match migrate!().run(&conn).await{
         Ok(_f) => println!("Migrations successful."),
         Err(e) => return Err::<(), ValkyrieErr>(
             ValkyrieErr::new(&e.to_string())

@@ -342,7 +342,7 @@ async fn test_db_functions() {
         .expect("Could not get DB url.");
     let connection: Pool<Postgres> = create_connection(&url)
         .await.expect("Could not connect to database.");
-    let _migrations = migrate!().run(&connection).await
+    migrate!().run(&connection).await
         .expect("Could not run migrations.");
     let instance = create_instance(
         "example.com", 
@@ -352,11 +352,11 @@ async fn test_db_functions() {
         "An example instance",
         &connection
     ).await.expect("Could not create instance.");
-    let _updated_name = update_instance_name(
+    update_instance_name(
         "New Example", 
         &connection
     ).await.expect("Could not update instance name.");
-    let _updated_description = update_instance_description(
+    update_instance_description(
         "A new example instance", 
         &connection
     ).await.expect("Could not update instance name.");
@@ -379,12 +379,12 @@ async fn test_db_functions() {
         false,
         &connection
     ).await.expect("User could not be created.");
-    let _uud = update_user_description(
+    update_user_description(
         "alyxshang",
         "A ziggy floofer",
         &connection
     ).await.expect("Could not update user description.");
-    let _uudd = update_user_display_name(
+    update_user_display_name(
         "alyxshang",
         "ALYX SHANG",
         &connection
@@ -416,7 +416,7 @@ async fn test_db_functions() {
         "Hello World",
         &connection
     ).await.expect("Could not create post.");
-    let _upp = update_post(
+    update_post(
         &post.post_id,
         &instance.host,
         "HELLO WORLD",
