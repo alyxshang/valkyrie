@@ -26,7 +26,7 @@ services:
       - "4000:5432"
     restart: unless-stopped
   app:
-    build: .
+    image: ghcr.io/alyxshang/valkyrie:latest
     container_name: valkyrie
     environment:
       - VALKYRIE_USE_SSL=NO
