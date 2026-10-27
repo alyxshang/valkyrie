@@ -17,8 +17,8 @@ The response of this API path has the shape as illustrated below:
 
 ```Typescript
 {
-    name: string
-    admin: string
+    name: string,
+    admin: string,
     description: string
 }
 ```
@@ -32,7 +32,7 @@ the API route to login the instance's administrator.
 
 ```Typescript
 {
-    token: string
+    token: string,
     new_value: string
 }
 ```
@@ -56,7 +56,7 @@ the API route to login the instance's administrator.
 
 ```Typescript
 {
-    token: string
+    token: string,
     new_value: string
 }
 ```
@@ -151,7 +151,7 @@ API token must exist first to carry out changes for a user.
 
 ```Typescript
 {
-    token: string
+    token: string,
     new_value: string
 }
 ```
@@ -163,7 +163,7 @@ illustrated below:
 
 ```Typescript
 {
-    "is_ok": bool
+    is_ok: bool
 }
 ```
 
@@ -175,7 +175,7 @@ API token must exist first to carry out changes for a user.
 
 ```Typescript
 {
-    token: string
+    token: string,
     new_value: string
 }
 ```
@@ -333,7 +333,6 @@ must exist first to follow someone.
     token: string,
     receiver_handle: string,
     receiver_host: string
-
 }
 ```
 
@@ -361,7 +360,6 @@ must exist first to unfollow someone.
     token: string,
     receiver_handle: string,
     receiver_host: string
-
 }
 ```
 

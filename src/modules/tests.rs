@@ -23,6 +23,12 @@ use actix_web;
 /// variables.
 use std::env::var;
 
+/// Importing the
+/// macro to run
+/// migrations on
+/// startup.
+use sqlx::migrate;
+
 /// Importing the function
 /// to get the current time
 /// as RFC 2822 as a string.
@@ -329,6 +335,8 @@ async fn test_db_functions() {
         .expect("Could not get DB url.");
     let connection: Pool<Postgres> = create_connection(&url)
         .await.expect("Could not connect to database.");
+    let _migrations = migrate!().run(&connection).await
+        .expect("Could not run migrations.");
     let instance = create_instance(
         "example.com", 
         "Example", 
