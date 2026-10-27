@@ -1,0 +1,43 @@
+on: [push]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: valkyrie
+          POSTGRES_PASSWORD: PV18
+          POSTGRES_DB: valkyrie
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      VALKYRIE_USE_SSL: "NO"
+      VALKYRIE_INSTANCE_IP: "127.0.0.1"
+      VALKYRIE_INSTANCE_PORT: "8080"
+      VALYKRIE_INSTANCE_DOMAIN: "example.com"
+      VALKYRIE_INSTANCE_NAME: "EXAMPLE INSTANCE"
+      VALKYRIE_INSTANCE_DESCRIPTION: "An ancient old example instance."
+      VALKYRIE_INSTANCE_POSTGRES_URL: "postgres://valkyrie:PV18@localhost:5432/valkyrie"
+      VALYKRIE_INSTANCE_ADMIN_USERNAME: "exampleadmin"
+      VALKYRIE_INSTANCE_ADMIN_PASSWORD: "PV18666"
+      VALKYRIE_INSTANCE_ADMIN_DISPLAY_NAME: "Admin"
+      VALKYRIE_INSTANCE_ADMIN_DESCRIPTION: "An ancient evil."
+    steps:
+    
+      - uses: actions/checkout@v6
+
+      - name: "Run unit tests."
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+      
+      - name: "Run Clippy."
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy

@@ -1,0 +1,7 @@
+/docs
+/target
+LICENSE
+/.github
+.DS_Store
+.gitignore
+README.markdown
