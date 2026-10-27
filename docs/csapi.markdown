@@ -3,14 +3,14 @@
 The following section explains which client-to-server API paths this
 implementation of the Valkyrie server has, which paths these API routes
 exist, the payloads they expect, and the responses they send back. All
-requests return responses in JSON form and those that are `POST`
-requests expect JSON payloads.
+requests return responses in Typescript form and those that are `POST`
+requests expect Typescript payloads.
 
 ## `GET /api/instance`
 
 The response of this API path has the shape as illustrated below:
 
-```JSON
+```Typescript
 {
     "name": string
     "admin": string
@@ -24,7 +24,7 @@ The payload of this API path must have the shape illustrated below. The
 token must be obtained first by calling the API route to login the
 instance's administrator.
 
-```JSON
+```Typescript
 {
     "token": string
     "new_value": string
@@ -34,7 +34,7 @@ instance's administrator.
 The response of this API path has the shape as illustrated below:
 
 
-```JSON
+```Typescript
 {
     "is_ok": bool
 }
@@ -47,7 +47,7 @@ token must be obtained first by calling the API route to login the
 instance's administrator.
 
 
-```JSON
+```Typescript
 {
     "token": string
     "new_value": string
@@ -57,7 +57,7 @@ instance's administrator.
 The response of this API path has the shape as illustrated below:
 
 
-```JSON
+```Typescript
 {
     "is_ok": bool
 }
@@ -67,7 +67,7 @@ The response of this API path has the shape as illustrated below:
 
 The payload of this API path must have the shape illustrated below:
 
-```JSON
+```Typescript
 {
     "username": string,
     "password": string,
@@ -79,7 +79,7 @@ The payload of this API path must have the shape illustrated below:
 The response of this API path has the shape as illustrated below:
 
 
-```JSON
+```Typescript
 {
     "username": string,
     "display_name": string,
@@ -93,7 +93,7 @@ The payload of this API path must have the shape illustrated below. This
 API path can also be used to obtain an API token to carry out further
 operations for a user.
 
-```JSON
+```Typescript
 {
     "username": string,
     "password": string
@@ -103,7 +103,7 @@ operations for a user.
 The response of this API path has the shape as illustrated below:
 
 
-```JSON
+```Typescript
 {
     "token": string
 }
@@ -113,7 +113,7 @@ The response of this API path has the shape as illustrated below:
 
 The payload of this API path must have the shape illustrated below:
 
-```JSON
+```Typescript
 {
     "token": string
 }
@@ -122,7 +122,7 @@ The payload of this API path must have the shape illustrated below:
 The response of this API path has the shape as illustrated below:
 
 
-```JSON
+```Typescript
 {
     "is_ok": bool
 }
@@ -133,7 +133,7 @@ The response of this API path has the shape as illustrated below:
 The payload of this API path must have the shape illustrated below. An
 API token must be obtained first to carry out changes for a user.
 
-```JSON
+```Typescript
 {
     "token": string
     "new_value": string
@@ -143,7 +143,7 @@ API token must be obtained first to carry out changes for a user.
 The response of this API path has the shape as illustrated below:
 
 
-```JSON
+```Typescript
 {
     "is_ok": bool
 }
@@ -154,7 +154,7 @@ The response of this API path has the shape as illustrated below:
 The payload of this API path must have the shape illustrated below. An
 API token must be obtained first to carry out changes for a user.
 
-```JSON
+```Typescript
 {
     "token": string
     "new_value": string
@@ -164,7 +164,7 @@ API token must be obtained first to carry out changes for a user.
 The response of this API path has the shape as illustrated below:
 
 
-```JSON
+```Typescript
 {
     "is_ok": bool
 }
@@ -174,7 +174,7 @@ The response of this API path has the shape as illustrated below:
 
 The payload of this API path must have the shape illustrated below:
 
-```JSON
+```Typescript
 {
     "token": string,
     "password": string,
@@ -185,7 +185,7 @@ The payload of this API path must have the shape illustrated below:
 The response of this API path has the shape as illustrated below:
 
 
-```JSON
+```Typescript
 {
     "is_ok": bool
 }
@@ -195,7 +195,7 @@ The response of this API path has the shape as illustrated below:
 
 The payload of this API path must have the shape illustrated below:
 
-```JSON
+```Typescript
 {
     "token": string,
     "content": string
@@ -205,11 +205,115 @@ The payload of this API path must have the shape illustrated below:
 The response of this API path has the shape as illustrated below:
 
 
-```JSON
+```Typescript
 {
     "post_id": string,
     "created_at": string, 
     "created_by": string, 
     "post_content": string
+}
+```
+
+## `POST /api/post/delete`
+
+The payload of this API path must have the shape illustrated below:
+
+```Typescript
+{
+    "token": string,
+    "post_id": string
+}
+```
+
+The response of this API path has the shape as illustrated below:
+
+
+```Typescript
+{
+    "is_ok": bool
+}
+```
+
+## `POST /api/post/update`
+
+The payload of this API path must have the shape illustrated below:
+
+```Typescript
+{
+    "token": string,
+    "content": string,
+    "post_id": string
+}
+```
+
+The response of this API path has the shape as illustrated below:
+
+
+```Typescript
+{
+    "is_ok": bool
+}
+```
+
+## `POST /api/user/tokens/list`
+
+The payload of this API path must have the shape illustrated below:
+
+```Typescript
+{
+    "token": string,
+}
+```
+
+The response of this API path has the shape as illustrated below:
+
+
+```Typescript
+{
+    "tokens": List<string>
+}
+```
+
+## `POST /api/user/follow`
+
+The payload of this API path must have the shape illustrated below:
+
+```Typescript
+{
+    "token": string,
+    "receiver_handle": string,
+    "receiver_host": string
+
+}
+```
+
+The response of this API path has the shape as illustrated below:
+
+
+```Typescript
+{
+    "is_ok": bool
+}
+```
+
+## `POST /api/user/unfollow`
+
+The payload of this API path must have the shape illustrated below:
+
+```Typescript
+{
+    "token": string,
+    "receiver_handle": string,
+    "receiver_host": string
+
+}
+```
+
+The response of this API path has the shape as illustrated below:
+
+
+```Typescript
+{
+    "is_ok": bool
 }
 ```
