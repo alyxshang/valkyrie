@@ -29,6 +29,11 @@ use std::env::var;
 /// startup.
 use sqlx::migrate;
 
+/// Importing a macro
+/// to avoid race
+/// conditions.
+use serial_test::serial;
+
 /// Importing the function
 /// to get the current time
 /// as RFC 2822 as a string.
@@ -313,6 +318,7 @@ use super::services::edit_instance_description_service;
 /// in the module containing utility
 /// functions.
 #[tokio::test]
+#[serial]
 async fn test_utils_functions(){
     let url: String = var("VALKYRIE_INSTANCE_POSTGRES_URL")
         .expect("Could not get DB url.");
@@ -330,6 +336,7 @@ async fn test_utils_functions(){
 /// the module to read and write data
 /// from and to the database.
 #[tokio::test]
+#[serial]
 async fn test_db_functions() {
     let url: String = var("VALKYRIE_INSTANCE_POSTGRES_URL")
         .expect("Could not get DB url.");
@@ -522,6 +529,7 @@ async fn test_db_functions() {
 /// in the module containing functions 
 /// to read configuration values.
 #[test]
+#[serial]
 pub fn test_config(){
     let values = read_config()
         .expect("Could not read configuration values.");
@@ -532,6 +540,7 @@ pub fn test_config(){
 /// for retrieving information on a Valkyrie
 /// instance.
 #[actix_web::test]
+#[serial]
 pub async fn test_instance_info_service() {
     let url: String = var("VALKYRIE_INSTANCE_POSTGRES_URL")
         .expect("Could not get DB url.");
@@ -552,6 +561,7 @@ pub async fn test_instance_info_service() {
 /// A function to test the service functions
 /// for managing users on a Valkyrie instance.
 #[actix_web::test]
+#[serial]
 pub async fn test_user_management_services() {
     let url: String = var("VALKYRIE_INSTANCE_POSTGRES_URL")
         .expect("Could not get DB url.");
@@ -665,6 +675,7 @@ pub async fn test_instance_edit_services() {
 /// A function to test the service functions
 /// for editing a user.
 #[actix_web::test]
+#[serial]
 pub async fn test_user_edit_services() {
     let url: String = var("VALKYRIE_INSTANCE_POSTGRES_URL")
         .expect("Could not get DB url.");
@@ -749,6 +760,7 @@ pub async fn test_user_edit_services() {
 /// A function to test one of the the Valkyrie
 /// protocol service functions.
 #[actix_web::test]
+#[serial]
 pub async fn test_protocol_services() {
     let url: String = var("VALKYRIE_INSTANCE_POSTGRES_URL")
         .expect("Could not get DB url.");
