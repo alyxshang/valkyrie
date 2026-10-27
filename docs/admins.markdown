@@ -1,7 +1,10 @@
 # GUIDE FOR ADMINISTRATORS
 
+## USING DOCKER COMPOSE
+
 This implementation of the Valkyrie API server is meant to be used via
-Docker Compose. The Docker Compose file only has two containers running:
+Docker Compose. It is recommended to run a firewall and reverse-proxy in
+front of any Docker Compose servers. The Docker Compose file only has two containers running:
 A PostgreSQL server and the Valkyrie API server itself. A minimal `docker-compose.yml`
 file could look something as is illustrated in the code snippet below.
 The section below this code snippet explains what each of the
@@ -29,7 +32,7 @@ services:
       - VALKYRIE_USE_SSL=NO
       - VALKYRIE_INSTANCE_IP=0.0.0.0
       - VALKYRIE_INSTANCE_PORT=3000
-      - VALYKRIE_INSTANCE_DOMAIN=localhost:3000
+      - VALYKRIE_INSTANCE_DOMAIN=localhost.com
       - VALKYRIE_INSTANCE_NAME=Valkyrie Local
       - VALKYRIE_INSTANCE_DESCRIPTION=Your instance description
       - VALKYRIE_INSTANCE_POSTGRES_URL=postgres://valkyrie:PV18123456@database:5432/valkyrie
@@ -58,5 +61,3 @@ volumes:
 - `VALKYRIE_INSTANCE_ADMIN_PASSWORD`: The environment variable representing the admininstrator user's password.  This can be changed later via the dedicated API service for carrying out this task.
 - `VALKYRIE_INSTANCE_ADMIN_DISPLAY_NAME`: The environment variable representing the admininstrator user's display name.  This can be changed later via the dedicated API service for carrying out this task.
 - `VALKYRIE_INSTANCE_ADMIN_DESCRIPTION`: The environment variable representing the admininstrator user's description.  This can be changed later via the dedicated API service for carrying out this task.
-
-

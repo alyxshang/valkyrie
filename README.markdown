@@ -21,7 +21,7 @@ A specification of the Valkyrie protocol can be found [here](https://alyxshang.b
 
 - [Client-to-Server API](docs/csapi.markdown)
 - [Server-to-Server API](docs/ssapi.markdown)
-- [Guide for administrators](admins.markdown)
+- [Guide for administrators](docs/admins.markdown)
 
 ## CHANGELOG
 
